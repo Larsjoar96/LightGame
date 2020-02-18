@@ -18,6 +18,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	class UStaticMeshComponent* Mesh;
 
+	UPROPERTY(VisibleAnywhere, Category = "Collider")
+	class UBoxComponent* Collider;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -3,6 +3,7 @@
 
 #include "Steinen.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ASteinen::ASteinen()
@@ -13,6 +14,8 @@ ASteinen::ASteinen()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
 	
+	Collider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
+	Collider->SetupAttachment(GetRootComponent());
 
 }
 
