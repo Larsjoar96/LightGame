@@ -23,6 +23,15 @@ APickup::APickup()
 	Collider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
 	Collider->SetupAttachment(GetRootComponent());
 
+	// Decides which type of objects it will react with, and if it should overlap or collide.
+	Collider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Collider->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	Collider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Collider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	// Mesh got its own collision, we don't want to control any functionalities through that collision
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +39,7 @@ void APickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// Start checking for OverlapBegin events
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
 }
 
@@ -41,10 +51,9 @@ void APickup::Tick(float DeltaTime)
 }
 
 void APickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+							 int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pickup: OnOverlapBegin called"))
+	UE_LOG(LogTemp, Warning, TEXT("PARENT: OnOverlapBegin called"))
 
-	// Remove pickup instance from scene
-	Destroy();
+	// Put particle effects and sound effects here (as it's common amongst all pickups)
 }
