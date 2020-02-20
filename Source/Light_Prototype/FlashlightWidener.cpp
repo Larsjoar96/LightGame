@@ -16,8 +16,5 @@ void AFlashlightWidener::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 
 	UE_LOG(LogTemp, Warning, TEXT("Flashlight Widener: OnOverlapBegin called"))
 
-	// Add functionalities for Flashlight Widener pickup
-
-	// Remove pickup instance from scene. This will also remove parent class.
-	Destroy();
+	// Functionalities for 'FlashlightWidener' is implemented in the BluePrint
 }
