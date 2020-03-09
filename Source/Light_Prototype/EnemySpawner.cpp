@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "EnemySpawner.h"
 #include "TimerManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "EnemySpawner.h"
 #include "EngineUtils.h"
 
 // Sets default values
@@ -60,7 +60,8 @@ void AEnemySpawner::Tick(float DeltaTime)
 
 void AEnemySpawner::SpawnEnemies()
 {
-	float RandomSpawnDelay = 0.4f;
+	float RandomSpawnDelay = 0.5f;
+	float RandomLaunchForce{};
 
 	UWorld* CurrentLevel = GetWorld();
 	UE_LOG(LogTemp, Warning, TEXT("Max index: %i"), MaxIndex)
@@ -74,13 +75,23 @@ void AEnemySpawner::SpawnEnemies()
 		AEnemy* SpawnedEnemy = Enemies[CurrentIndex];
 		SpawnedEnemy->SetActorLocation(StartPoint->GetComponentLocation());
 
-		// Add force and shit
+		// Assign random values for both variables
+		RandomSpawnDelay *= UKismetMathLibrary::RandomFloat();
+		RandomLaunchForce = UKismetMathLibrary::RandomFloatInRange(0.9f, 1.1f);
+
+		// 'LaunchVector' is calculated (by trial and error) to launch in the correct direction with the correct force
+		UCharacterMovementComponent* EnemyMovementComponent;
+		FVector LaunchDirection = this->GetActorForwardVector();
+		FVector LaunchVector = FVector(34000.0f * LaunchDirection.X, 34000.0f * LaunchDirection.Y, 100000.0f) * RandomLaunchForce;
+
+		// Cast from PawnMovementComponent to CharacterMovementComponent to get access to 'AddImpulse()'
+		// I use 'AddImpulse()' to launch the enemy towards the platform at spawn time
+		EnemyMovementComponent = Cast<UCharacterMovementComponent>(SpawnedEnemy->GetMovementComponent());
+		EnemyMovementComponent->AddImpulse(LaunchVector, false);
 
 		CurrentIndex++;
-		RandomSpawnDelay *= UKismetMathLibrary::RandomFloat();
-
-		// Add a little delay between each spawn with minimum delay being 0.15 seconds and max being 0.55 seconds
-		CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (2.15f + RandomSpawnDelay));
+		// Add a little delay between each spawn with minimum delay being 0.35 seconds and max being 0.85 seconds
+		CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (0.35f + RandomSpawnDelay));
 	}
 
 }
