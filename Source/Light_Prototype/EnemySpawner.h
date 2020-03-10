@@ -9,6 +9,20 @@
 #include "EnemySpawner.generated.h"
 
 
+// ENUM identical to the ENUM in 'Enemy.h' where the these spawners will check if an enemy instance
+// is assigned the same integer value (same label). If identical: the enemy should be spawned by this spawner.
+UENUM(BlueprintType)
+enum class ESpawnLabel : uint8
+{
+	ESL_None	    UMETA(Displayname = "None"),
+	ESL_Label_One	UMETA(Displayname = "Label_One"),
+	ESL_LABEL_Two   UMETA(Displayname = "Label_Two"),
+	ESL_Label_Three UMETA(Displayname = "Label_Three"),
+	ESL_Label_Four  UMETA(Displayname = "Label_Four"),
+	ESL_Max		    UMETA(Displayname = "DefaultMax")
+};
+
+
 UCLASS()
 class LIGHT_PROTOTYPE_API AEnemySpawner : public AActor
 {
@@ -24,8 +38,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Visual of Points")
 	class UStaticMeshComponent* StartPoint;
 
-	//UPROPERTY(EditAnywhere, Category = "Distance")
-	//float TravelDistance;
+	// What group of enemies this spawner should spawn. Assignment is made in editor.
+	UPROPERTY(EditAnywhere, Category = "Enums")
+	ESpawnLabel SpawnLabel;
 
 	// Array filled up with instances to spawn
 	TArray<AEnemy*> Enemies;
@@ -33,9 +48,17 @@ public:
 	// TimerHandle to track time processes
 	FTimerHandle MyTimerHandle;
 
+	int32 MaxIndex;
+
+	int32 CurrentWave;
+
 	int32 CurrentIndex;
 
-	int32 MaxIndex;
+	// Spawners are limited to 3 waves for now...
+	UPROPERTY(EditAnywhere, Category = "Waves")
+	int32 Waves[3];
+
+	float Seconds; // ONLY DEBUGGING!
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,5 +70,7 @@ public:
 
 	// Spawn next enemy in line
 	void SpawnEnemies();
+
+	void SpawnNextWave();
 
 };
