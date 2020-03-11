@@ -8,11 +8,25 @@ AMyPlayer::AMyPlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	//Initialize Object Components
+
 	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
 	LaserCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserCollider"));
 	PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
+
+	FlashLightCollider->SetupAttachment(PlayerMesh);
+	LaserCollider->SetupAttachment(PlayerMesh);
+
+
+
+
+	
+}
+
+// Called when the game starts or when spawned
+void AMyPlayer::BeginPlay()
+{
+	Super::BeginPlay();
 
 	ColliderLocationOffset = 9000.0f;
 	//Initialize Flashlight collider Transforms
@@ -50,15 +64,6 @@ AMyPlayer::AMyPlayer()
 	LaserScalePoweredUp.Z = LaserScalePoweredUp.Z * UpgradeLaserScale;
 
 
-	
-}
-
-// Called when the game starts or when spawned
-void AMyPlayer::BeginPlay()
-{
-	Super::BeginPlay();
-
-
 }
 
 // Called every frame
@@ -72,7 +77,7 @@ void AMyPlayer::Tick(float DeltaTime)
 	LookAtMouse();
 	if(bHasPowerUp == true) 
 	{
-		PowerUpTimeLeft = PowerUpTimeLeft - DeltaTime;
+		PowerUpTimeLeft = PowerUpTimeLeft - Time;
 		if(PowerUpTimeLeft <= 0)
 		{
 			LosePowerup();
@@ -80,7 +85,7 @@ void AMyPlayer::Tick(float DeltaTime)
 	}
 	if(bJustTookDamage == true)
 	{
-		TimeRecovering = TimeRecovering + DeltaTime;
+		TimeRecovering = TimeRecovering + Time;
 		if(TimeRecovering >= TimeToRecover)
 		{
 			bJustTookDamage = false;
@@ -99,7 +104,7 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMyPlayer::Shoot);
 }
 
-void AMyPlayer::ChargeUp()//Hold button to charge finishing move
+void AMyPlayer::ChargeUp()//Hold button to charge 
 {
 	if(bJustShot == false)
 	{
@@ -107,7 +112,7 @@ void AMyPlayer::ChargeUp()//Hold button to charge finishing move
 	}
 }
 
-void AMyPlayer::Shoot()//Shoot if your finishing move is fully charged
+void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
 	if(bJustShot == false)
 	{
@@ -115,7 +120,7 @@ void AMyPlayer::Shoot()//Shoot if your finishing move is fully charged
 		{
 
 			LaserCollider->SetRelativeLocation(LaserLocationPoweredUp);	//Set location of Laser hitbox ahead of the player
-			//Delay by shooting time
+			
 
 			LaserCollider->SetRelativeLocation(LaserLocationDefault);//Set location of Laser hitbox in hide location
 

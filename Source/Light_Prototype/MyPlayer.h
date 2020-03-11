@@ -9,6 +9,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Math/TransformNonVectorized.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "MyPlayer.generated.h"
 
 UCLASS()
@@ -34,12 +35,11 @@ public:
 	UPROPERTY()
 	float Time;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category = "Collider")
 	class UBoxComponent* FlashLightCollider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category = "Collider")
 	class UBoxComponent* LaserCollider;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category = "Mesh")
 	class USkeletalMeshComponent* PlayerMesh;
 
 	
