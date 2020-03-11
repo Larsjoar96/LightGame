@@ -2,8 +2,6 @@
 
 
 #include "Enemy.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
