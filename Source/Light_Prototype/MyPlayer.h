@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
@@ -12,6 +13,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Math/TransformNonVectorized.h"
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 #include "MyPlayer.generated.h"
 
 UCLASS()
@@ -34,6 +37,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 	UPROPERTY()
@@ -156,4 +160,6 @@ public:
 
 
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 };

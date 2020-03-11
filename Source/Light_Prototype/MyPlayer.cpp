@@ -10,6 +10,7 @@ AMyPlayer::AMyPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	//Initialize Object Components
 	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
@@ -54,6 +55,8 @@ AMyPlayer::AMyPlayer()
 
 	
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 }
 
 // Called when the game starts or when spawned
@@ -61,11 +64,15 @@ void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 <<<<<<< HEAD
+<<<<<<< HEAD
 	
 =======
 
 
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+	
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 }
 
 // Called every frame
@@ -73,6 +80,7 @@ void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 	Time = DeltaTime;
@@ -99,12 +107,15 @@ void AMyPlayer::Tick(float DeltaTime)
 	}
 
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 }
 
 // Called to bind functionality to input
 void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMyPlayer::ChargeUp);
@@ -199,6 +210,8 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 
 	ReloadSpeedCurrent = ReloadSpeedDefault;
 >>>>>>> parent of cf34ad3... More blueprint conversion
+=======
+>>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 
 }
 
