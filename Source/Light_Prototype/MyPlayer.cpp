@@ -6,16 +6,16 @@
 // Sets default values
 AMyPlayer::AMyPlayer()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 	//Initialize Object Components
+
 	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
 	LaserCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserCollider"));
 	PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
+
+	FlashLightCollider->SetupAttachment(PlayerMesh);
+	LaserCollider->SetupAttachment(PlayerMesh);
 
 	ColliderLocationOffset = 9000.0f;
 	//Initialize Flashlight collider Transforms
@@ -53,26 +53,17 @@ AMyPlayer::AMyPlayer()
 	LaserScalePoweredUp.Z = LaserScalePoweredUp.Z * UpgradeLaserScale;
 
 
-	
->>>>>>> parent of cf34ad3... More blueprint conversion
-=======
->>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
+
+
 }
 
 // Called when the game starts or when spawned
 void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-<<<<<<< HEAD
-<<<<<<< HEAD
-	
-=======
 
 
->>>>>>> parent of cf34ad3... More blueprint conversion
-=======
-	
->>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
+
 }
 
 // Called every frame
@@ -80,25 +71,22 @@ void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 	Time = DeltaTime;
 
 	LightBehaviour();
 	LookAtMouse();
-	if(bHasPowerUp == true) 
+	if (bHasPowerUp == true)
 	{
-		PowerUpTimeLeft = PowerUpTimeLeft - DeltaTime;
-		if(PowerUpTimeLeft <= 0)
+		PowerUpTimeLeft = PowerUpTimeLeft - Time;
+		if (PowerUpTimeLeft <= 0)
 		{
 			LosePowerup();
 		}
 	}
-	if(bJustTookDamage == true)
+	if (bJustTookDamage == true)
 	{
-		TimeRecovering = TimeRecovering + DeltaTime;
-		if(TimeRecovering >= TimeToRecover)
+		TimeRecovering = TimeRecovering + Time;
+		if (TimeRecovering >= TimeToRecover)
 		{
 			bJustTookDamage = false;
 			//End damagefeedback here....
@@ -106,39 +94,33 @@ void AMyPlayer::Tick(float DeltaTime)
 		}
 	}
 
->>>>>>> parent of cf34ad3... More blueprint conversion
-=======
->>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
 }
 
 // Called to bind functionality to input
 void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMyPlayer::ChargeUp);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMyPlayer::Shoot);
 }
 
-void AMyPlayer::ChargeUp()//Hold button to charge finishing move
+void AMyPlayer::ChargeUp()//Hold button to charge 
 {
-	if(bJustShot == false)
+	if (bJustShot == false)
 	{
 		bIsCharging = true;
 	}
 }
 
-void AMyPlayer::Shoot()//Shoot if your finishing move is fully charged
+void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
-	if(bJustShot == false)
+	if (bJustShot == false)
 	{
-		if(LaserCharger >= LaserFullyCharged) 
+		if (LaserCharger >= LaserFullyCharged)
 		{
 
 			LaserCollider->SetRelativeLocation(LaserLocationPoweredUp);	//Set location of Laser hitbox ahead of the player
-			//Delay by shooting time
+
 
 			LaserCollider->SetRelativeLocation(LaserLocationDefault);//Set location of Laser hitbox in hide location
 
@@ -165,7 +147,7 @@ void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
 
 	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;
-	
+
 }
 
 void AMyPlayer::PickupEventFasterReload()//Increase fire rate of your finishing move
@@ -183,7 +165,7 @@ void AMyPlayer::PickupEventBiggerLaser()//Increase the size of the finishing mov
 	LaserScaleCurrent = LaserScalePoweredUp;
 	LaserRotationCurrent = LaserRotationPoweredUp;
 
-	
+
 
 	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;
@@ -209,9 +191,77 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 	LaserCollider->SetRelativeScale3D(LaserScaleCurrent);
 
 	ReloadSpeedCurrent = ReloadSpeedDefault;
->>>>>>> parent of cf34ad3... More blueprint conversion
-=======
->>>>>>> parent of adf1628... Merge branch 'master' of https://github.com/Larsjoar96/LightGame
+
+	bHasPowerUp = false;
 
 }
+
+void AMyPlayer::TakeDamageTho()
+{
+	PlayerHealth = PlayerHealth - DamageTaken;
+
+	if (PlayerHealth <= 0)
+	{
+		AMyPlayer(Destroy);
+	}
+	else
+	{
+		//Damage feedback and invinsibility frames
+	}
+}
+
+void AMyPlayer::LightBehaviour()
+{
+	if (bIsCharging == false)
+	{
+		if (LaserCharger >= LaserFullyCharged) //Are you fully charged ?
+		{
+			FlashLightCollider->SetRelativeLocation(LightLocationPoweredUp);
+
+		}
+		LaserCharger = LaserCharger + (ReloadSpeedCurrent * Time);
+		FlashLightCollider->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+	}
+	else
+	{
+
+		if (bJustShot == true)
+		{
+			LaserCharger = LaserCharger - (LightReturnSpeed * (ReloadSpeedCurrent * Time));
+
+			if (LaserCharger <= 0)
+			{
+				bJustShot = false;
+				//Set light flicker
+				//Set location of Finishing move to hidden
+				LaserCollider->SetRelativeLocation(LaserLocationPoweredUp);
+				//Set location of flashlight hitbox in front of player
+				FlashLightCollider->SetRelativeLocation(LightLocationPoweredUp);
+				//Change scale of Flashlight hitbox light
+				FlashLightCollider->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+			}
+			else
+			{
+				//Flicker light
+				FlashLightCollider->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+			}
+		}
+		else
+		{
+			if (LaserCharger > 0)
+			{
+				LaserCharger = LaserCharger - (LightReturnSpeed * (ReloadSpeedCurrent * Time));
+				FlashLightCollider->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+			}
+		}
+	}
+
+}
+
+void AMyPlayer::LookAtMouse()
+{
+
+}
+
+
 
