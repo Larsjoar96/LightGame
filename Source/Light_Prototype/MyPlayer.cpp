@@ -6,7 +6,7 @@
 // Sets default values
 AMyPlayer::AMyPlayer()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	//Initialize Object Components
 
@@ -16,17 +16,6 @@ AMyPlayer::AMyPlayer()
 
 	FlashLightCollider->SetupAttachment(PlayerMesh);
 	LaserCollider->SetupAttachment(PlayerMesh);
-
-
-
-
-	
-}
-
-// Called when the game starts or when spawned
-void AMyPlayer::BeginPlay()
-{
-	Super::BeginPlay();
 
 	ColliderLocationOffset = 9000.0f;
 	//Initialize Flashlight collider Transforms
@@ -64,6 +53,17 @@ void AMyPlayer::BeginPlay()
 	LaserScalePoweredUp.Z = LaserScalePoweredUp.Z * UpgradeLaserScale;
 
 
+
+
+}
+
+// Called when the game starts or when spawned
+void AMyPlayer::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+
 }
 
 // Called every frame
@@ -75,18 +75,18 @@ void AMyPlayer::Tick(float DeltaTime)
 
 	LightBehaviour();
 	LookAtMouse();
-	if(bHasPowerUp == true) 
+	if (bHasPowerUp == true)
 	{
 		PowerUpTimeLeft = PowerUpTimeLeft - Time;
-		if(PowerUpTimeLeft <= 0)
+		if (PowerUpTimeLeft <= 0)
 		{
 			LosePowerup();
 		}
 	}
-	if(bJustTookDamage == true)
+	if (bJustTookDamage == true)
 	{
 		TimeRecovering = TimeRecovering + Time;
-		if(TimeRecovering >= TimeToRecover)
+		if (TimeRecovering >= TimeToRecover)
 		{
 			bJustTookDamage = false;
 			//End damagefeedback here....
@@ -106,7 +106,7 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMyPlayer::ChargeUp()//Hold button to charge 
 {
-	if(bJustShot == false)
+	if (bJustShot == false)
 	{
 		bIsCharging = true;
 	}
@@ -114,13 +114,13 @@ void AMyPlayer::ChargeUp()//Hold button to charge
 
 void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
-	if(bJustShot == false)
+	if (bJustShot == false)
 	{
-		if(LaserCharger >= LaserFullyCharged) 
+		if (LaserCharger >= LaserFullyCharged)
 		{
 
 			LaserCollider->SetRelativeLocation(LaserLocationPoweredUp);	//Set location of Laser hitbox ahead of the player
-			
+
 
 			LaserCollider->SetRelativeLocation(LaserLocationDefault);//Set location of Laser hitbox in hide location
 
@@ -147,7 +147,7 @@ void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
 
 	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;
-	
+
 }
 
 void AMyPlayer::PickupEventFasterReload()//Increase fire rate of your finishing move
@@ -165,7 +165,7 @@ void AMyPlayer::PickupEventBiggerLaser()//Increase the size of the finishing mov
 	LaserScaleCurrent = LaserScalePoweredUp;
 	LaserRotationCurrent = LaserRotationPoweredUp;
 
-	
+
 
 	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;
@@ -196,15 +196,15 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 
 }
 
-void AMyPlayer::TakeDamage()
+void AMyPlayer::TakeDamageTho()
 {
 	PlayerHealth = PlayerHealth - DamageTaken;
 
-	if(PlayerHealth <= 0) 
+	if (PlayerHealth <= 0)
 	{
 		AMyPlayer(Destroy);
 	}
-	else 
+	else
 	{
 		//Damage feedback and invinsibility frames
 	}
@@ -212,9 +212,9 @@ void AMyPlayer::TakeDamage()
 
 void AMyPlayer::LightBehaviour()
 {
-	if(bIsCharging == false)
+	if (bIsCharging == false)
 	{
-		if(LaserCharger >= LaserFullyCharged) //Are you fully charged ?
+		if (LaserCharger >= LaserFullyCharged) //Are you fully charged ?
 		{
 			FlashLightCollider->SetRelativeLocation(LightLocationPoweredUp);
 
@@ -224,12 +224,12 @@ void AMyPlayer::LightBehaviour()
 	}
 	else
 	{
-		
+
 		if (bJustShot == true)
 		{
 			LaserCharger = LaserCharger - (LightReturnSpeed * (ReloadSpeedCurrent * Time));
 
-			if(LaserCharger <= 0)
+			if (LaserCharger <= 0)
 			{
 				bJustShot = false;
 				//Set light flicker
