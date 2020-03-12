@@ -41,8 +41,6 @@ void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PickupEventBiggerFlashlight();
-	/*
 	//Initialize Flashlight collider Transforms
 	LightLocationCurrent = LightLocationDefault;
 	LightScaleCurrent = LightScaleDefault;
@@ -74,7 +72,6 @@ void AMyPlayer::BeginPlay()
 	LaserPivot->SetRelativeRotation(LaserRotationDefault);
 	FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 	FlashLightPivot->SetRelativeRotation(LightRotationDefault);
-	*/
 
 
 }
