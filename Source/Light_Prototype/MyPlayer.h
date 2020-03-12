@@ -40,10 +40,12 @@ public:
 		class UBoxComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 		class USphereComponent* FlashLightPivot;
+
 	UPROPERTY(EditAnywhere, Category = "Collider")
 		class UBoxComponent* LaserCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 		class USphereComponent* LaserPivot;
+
 	UPROPERTY(EditAnywhere, Category = "Mesh")
 		class USkeletalMeshComponent* PlayerMesh;
 
