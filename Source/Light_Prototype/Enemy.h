@@ -31,7 +31,7 @@ public:
 	AEnemy();
 
 	// Assign which 'EnemySpawner' this enemy should spawn at
-	UPROPERTY(EditAnywhere, Category = "Enums")
+	UPROPERTY(EditAnywhere, Category = "MyVariables | Enums")
 	EEnemyLabel EnemyLabel;
 
 	// ArenaDetector is communicating with its ArenaManager about OverlapEvents
