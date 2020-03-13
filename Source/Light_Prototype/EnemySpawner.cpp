@@ -151,8 +151,8 @@ void AEnemySpawner::SpawnEnemies()
 			EnemyMovementComponent->AddImpulse(LaunchVector, false);
 
 			CurrentIndex++;
-			// Add a little delay between each spawn with minimum delay being 0.35 seconds and max being 0.85 seconds
-			CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (0.35f + RandomSpawnDelay));
+			// Add a little delay between each spawn with minimum delay being 0.45 seconds and max being 0.95 seconds
+			CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (0.45f + RandomSpawnDelay));
 		}
 	}
 
