@@ -46,8 +46,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collider")
 		class USphereComponent* LaserPivot;
 
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-		class USkeletalMeshComponent* PlayerMesh;
+	//UPROPERTY(EditAnywhere, Category = "Mesh")
+		//class USkeletalMeshComponent* PlayerMesh;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")

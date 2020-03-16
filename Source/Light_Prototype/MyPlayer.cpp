@@ -13,13 +13,19 @@ AMyPlayer::AMyPlayer()
 	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
 	FlashLightPivot = CreateDefaultSubobject<USphereComponent>(TEXT("FlashLightColliderPivot"));
 	LaserCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserCollider"));
+	LaserCollider->SetRelativeScale3D(FVector(90.f, 1.5f, 1.5f));
+	LaserCollider->SetRelativeLocation(FVector(2920.f, 0.f, 0.f));
 	LaserPivot = CreateDefaultSubobject<USphereComponent>(TEXT("LaserColliderPivot"));
-	PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
+	LaserPivot->SetRelativeScale3D(FVector(.25f, .25f, .25f));
+	LaserPivot->SetRelativeLocation(FVector(40, 0.f, 0.f));
+
+
+	//PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
 
 	FlashLightCollider->SetupAttachment(FlashLightPivot);
 	LaserCollider->SetupAttachment(LaserPivot);
-	LaserPivot->SetupAttachment(PlayerMesh);
-	FlashLightPivot->SetupAttachment(PlayerMesh);
+	LaserPivot->SetupAttachment(GetRootComponent());
+	FlashLightPivot->SetupAttachment(GetRootComponent());
 
 	ColliderLocationOffset = 9000.0f;
 	//Initialize Flashlight collider Transforms
@@ -31,8 +37,6 @@ AMyPlayer::AMyPlayer()
 	LaserLocationDefault = LaserPivot->GetRelativeLocation();
 	LaserScaleDefault = LaserPivot->GetRelativeScale3D();
 	LaserRotationDefault = this->GetActorRotation();
-
-
 
 }
 
