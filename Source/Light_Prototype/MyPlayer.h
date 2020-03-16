@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Math/TransformNonVectorized.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -38,9 +39,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collider")
 		class UBoxComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
+		class USphereComponent* FlashLightPivot;
+
+	UPROPERTY(EditAnywhere, Category = "Collider")
 		class UBoxComponent* LaserCollider;
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-		class USkeletalMeshComponent* PlayerMesh;
+	UPROPERTY(EditAnywhere, Category = "Collider")
+		class USphereComponent* LaserPivot;
+
+	//UPROPERTY(EditAnywhere, Category = "Mesh")
+		//class USkeletalMeshComponent* PlayerMesh;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
@@ -138,7 +145,7 @@ public:
 	void PickupEventFasterReload();
 	void LosePowerup();
 	void LightBehaviour();
-	void GetHit();
+	void TakeDamageTho();
 	void Shoot();
 	void ChargeUp();
 	void LookAtMouse();
