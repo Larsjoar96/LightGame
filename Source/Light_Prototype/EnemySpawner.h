@@ -39,7 +39,7 @@ public:
 	class UStaticMeshComponent* StartPoint;
 
 	// What group of enemies this spawner should spawn. Assignment is made in editor.
-	UPROPERTY(EditAnywhere, Category = "MyVariables | Enums")
+	UPROPERTY(EditAnywhere, Category = "Enums")
 	ESpawnLabel SpawnLabel;
 
 	// Array filled up with instances to spawn
@@ -54,15 +54,11 @@ public:
 
 	int32 CurrentIndex;
 
-	int32 AmountOfWaves;
+	// Spawners are limited to 3 waves for now...
+	UPROPERTY(EditAnywhere, Category = "Waves")
+	int32 Waves[3];
 
-	// Number of waves can be changed by just increasing the number of elements.
-	// Waves will continue to spawn as long as there are at least one enemy to spawn.
-	UPROPERTY(EditAnywhere, Category = "MyVariables | Waves")
-	int32 Waves[5];
-
-	bool bEmptyWave;
-
+	float Seconds; // ONLY DEBUGGING!
 
 protected:
 	// Called when the game starts or when spawned
