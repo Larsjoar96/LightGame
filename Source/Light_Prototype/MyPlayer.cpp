@@ -182,7 +182,7 @@ void AMyPlayer::PickupEventFasterReload()//Increase fire rate of your finishing 
 {
 	LosePowerup();
 	ReloadSpeedCurrent = ReloadSpeedUpgraded;
-	bHasPowerUp;
+	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;
 }
 
@@ -192,8 +192,7 @@ void AMyPlayer::PickupEventBiggerLaser()//Increase the size of the finishing mov
 	LaserLocationCurrent = LaserLocationPoweredUp;
 	LaserScaleCurrent = LaserScalePoweredUp;
 	LaserRotationCurrent = LaserRotationPoweredUp;
-
-
+	LaserPivot->SetRelativeScale3D(LaserScaleCurrent);
 
 	bHasPowerUp = true;
 	PowerUpTimeLeft = PowerUpTime;

@@ -4,24 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "FlashlightWidener.generated.h"
+#include "Pickup_LaserWidener.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
-class LIGHT_PROTOTYPE_API AFlashlightWidener : public APickup
+class LIGHT_PROTOTYPE_API APickup_LaserWidener : public APickup
 {
 	GENERATED_BODY()
 
 public:
-	AFlashlightWidener();
+	APickup_LaserWidener();
 
 	UPROPERTY()
-	class AMyPlayer* Player;//Player reference
+		class AMyPlayer* Player;//Player reference
 
 
-	// DON'T USE UFUNCTION() FOR OVERRIDES 
+		// DON'T USE UFUNCTION() FOR OVERRIDES 
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 

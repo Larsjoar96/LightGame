@@ -38,6 +38,48 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* ArenaDetector;
 
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* FlashlightDetector;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* LaserDetector;
+
+	UPROPERTY()
+	class AMyPlayer* Player;
+
+	UPROPERTY()
+	class ACharacter* CharacterCaster;
+
+	UPROPERTY(EditAnywhere)
+	bool bBeingStunned;//Check if enemy is standing in flashlight
+
+	UPROPERTY(EditAnywhere)
+	bool bIsStunned;//Check if enemy is stunned 
+
+	UPROPERTY(EditAnywhere)
+	float TimeStunned;//How long the enemy should be stunned in seconds
+
+	UPROPERTY(EditAnywhere)//How long it takes to stun enemy in seconds
+	float TimeUntilStunned;
+
+	UPROPERTY(EditAnywhere)
+	float TimeInFlashlight;//How long the enemy has been isnide flashlight
+
+	UPROPERTY(EditAnywhere)
+	float TopSpeed;//The fastest the enemy moves
+
+	UPROPERTY(EditAnywhere)
+	float MoveAttackCollider;
+
+	UPROPERTY(EditAnywhere)
+	float MovementSpeedReduction;//Decides how much speed enemy should lose by being inside flashlight
+
+	UPROPERTY(EditAnywhere)
+	FVector SpawnPoolLocation;//Location of where non-used enemies will be
+
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,11 +92,47 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void ArenaBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void ArenaEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void FlashLightEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void LaserBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UFUNCTION()
+	void LaserEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void AttackRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void Stunning();
+
+	UFUNCTION()
+	void Rally();
+
+	UFUNCTION()
+	void Die();
+
+
+
 
 };
