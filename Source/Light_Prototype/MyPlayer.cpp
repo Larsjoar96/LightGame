@@ -27,16 +27,38 @@ AMyPlayer::AMyPlayer()
 	LaserPivot->SetupAttachment(GetRootComponent());
 	FlashLightPivot->SetupAttachment(GetRootComponent());
 
-	ColliderLocationOffset = 9000.0f;
+	ColliderLocationOffset = 9000.0f;//Used for hiding flashlight cone and laser
+
 	//Initialize Flashlight collider Transforms
 	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
 	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
 	LightRotationDefault = this->GetActorRotation();
 
+	FlashLightScaleModifier = 1.1f;
+	LightReduceScaleMod = 1.01f;//Used to make the scale of the flashlight go down when you charge up laser
+	LightReturnSpeed = 1.0f; //Determines how fast you flashlight returns after shooting your laser
+
 	//Initialize Laser Collider Transforms
 	LaserLocationDefault = LaserPivot->GetRelativeLocation();
+	LaserLocationDefault = FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z - ColliderLocationOffset);
 	LaserScaleDefault = LaserPivot->GetRelativeScale3D();
 	LaserRotationDefault = this->GetActorRotation();
+
+	//Initialize PowerUp Variables
+	PowerUpTime = 45.0f;
+	PowerUpTimeLeft = 0;
+	ReloadSpeedDefault = 1.0f;
+	ReloadSpeedCurrent = 1.0f;
+	ReloadSpeedUpgraded = 4.0f;
+	PowerUpLightScale = 2.0f;
+	PowerUpLaserScale = 2.0f;
+
+	//Combat values
+	PlayerHealth = 5;
+	DamageTaken = 1;
+	ShootingTime = 0.2f;
+
+
 
 }
 
@@ -51,12 +73,8 @@ void AMyPlayer::BeginPlay()
 	LightRotationCurrent = LightRotationDefault;
 
 	LightLocationPoweredUp = LightLocationDefault;
-	LightScalePoweredUp = LightScaleDefault;
+	LightScalePoweredUp = FVector(LightScaleDefault.X, LightScaleDefault.Y * PowerUpLightScale, LightScaleDefault.Z * PowerUpLightScale);
 	LightRotationPoweredUp = LightRotationDefault;
-
-	LightLocationPoweredUp = LightLocationDefault - ColliderLocationOffset;
-	LightScalePoweredUp.Y = LightScalePoweredUp.Y * UpgradeLaserScale;
-	LightScalePoweredUp.Z = LightScalePoweredUp.Z * UpgradeLaserScale;
 
 
 	//Initialize Laser Collider Transforms
@@ -65,18 +83,14 @@ void AMyPlayer::BeginPlay()
 	LaserRotationCurrent = LaserRotationDefault;
 
 	LaserLocationPoweredUp = LaserLocationDefault;
-	LaserScalePoweredUp = LaserScaleDefault;
+	LaserScalePoweredUp = FVector(LaserScaleDefault.X, LaserScaleDefault.Y * PowerUpLaserScale, LaserScaleDefault.Z * PowerUpLaserScale);
 	LaserRotationPoweredUp = LaserRotationDefault;
 
-	LaserLocationPoweredUp.Z = LaserLocationDefault.Z + ColliderLocationOffset;//Move laser up in front of player
-	LaserScalePoweredUp.Y = LaserScalePoweredUp.Y * UpgradeLaserScale;
-	LaserScalePoweredUp.Z = LaserScalePoweredUp.Z * UpgradeLaserScale;
 
 	LaserPivot->SetRelativeLocation(LaserLocationDefault);
 	LaserPivot->SetRelativeRotation(LaserRotationDefault);
 	FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 	FlashLightPivot->SetRelativeRotation(LightRotationDefault);
-
 
 }
 
@@ -87,8 +101,9 @@ void AMyPlayer::Tick(float DeltaTime)
 
 	Time = DeltaTime;
 
-	//LightBehaviour();
-	LookAtMouse();
+	FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
+
+	LightBehaviour();
 	if (bHasPowerUp == true)
 	{
 		PowerUpTimeLeft = PowerUpTimeLeft - Time;
@@ -129,18 +144,17 @@ void AMyPlayer::ChargeUp()//Hold button to charge
 void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
 	if (bJustShot == false)
+		UE_LOG(LogTemp, Warning, TEXT("Shoot!"));
 	{
 		if (LaserCharger >= LaserFullyCharged)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("PEW!"));
 
-			LaserPivot->SetRelativeLocation(LaserLocationPoweredUp);	//Set location of Laser hitbox ahead of the player
+			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X,LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
+
+			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
 
 
-			LaserPivot->SetRelativeLocation(LaserLocationDefault);//Set location of Laser hitbox in hide location
-
-			FlashLightPivot->SetRelativeLocation(LightLocationDefault);//Set location of Flashlight hitbox ahead of the player
-			bIsCharging = false;
-			bJustShot = true;
 		}
 		else
 		{
@@ -153,7 +167,7 @@ void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 
 void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
 {
-	//LosePowerup();
+	LosePowerup();
 	LightLocationCurrent = LightLocationPoweredUp;
 	LightScaleCurrent = LightScalePoweredUp;
 	LightRotationCurrent = LightRotationPoweredUp;
@@ -196,11 +210,9 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 	FlashLightPivot->SetRelativeScale3D(LightScaleDefault);
 
 
-	LaserLocationCurrent = LaserLocationDefault;
 	LaserScaleCurrent = LaserScaleDefault;
 	LaserRotationCurrent = LaserRotationDefault;
 
-	LaserPivot->SetRelativeLocation(LaserLocationDefault);
 	LaserPivot->SetRelativeRotation(LaserRotationDefault);
 	LaserPivot->SetRelativeScale3D(LaserScaleDefault);
 
@@ -226,15 +238,18 @@ void AMyPlayer::TakeDamageTho()
 
 void AMyPlayer::LightBehaviour()
 {
-	if (bIsCharging == false)
+	if (bIsCharging == true)
 	{
 		if (LaserCharger >= LaserFullyCharged) //Are you fully charged ?
 		{
-			FlashLightPivot->SetRelativeLocation(LightLocationPoweredUp);
+			FlashLightPivot->SetRelativeLocation(FVector(LightLocationDefault.X, LightLocationDefault.Y, LightLocationDefault.Z - ColliderLocationOffset));//HideFlashlight
 
 		}
-		LaserCharger = LaserCharger + (ReloadSpeedCurrent * Time);
-		FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+		if (LaserCharger < LaserFullyCharged)
+		{
+			LaserCharger = LaserCharger + (ReloadSpeedCurrent * Time);
+		}
+		FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 	}
 	else
 	{
@@ -246,18 +261,27 @@ void AMyPlayer::LightBehaviour()
 			if (LaserCharger <= 0)
 			{
 				bJustShot = false;
-				//Set light flicker
+				FlashLightPivot->SetHiddenInGame(false);
 				//Set location of Finishing move to hidden
-				LaserPivot->SetRelativeLocation(LaserLocationPoweredUp);
+				LaserPivot->SetRelativeLocation(LaserLocationDefault);
 				//Set location of flashlight hitbox in front of player
-				FlashLightPivot->SetRelativeLocation(LightLocationPoweredUp);
+				FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 				//Change scale of Flashlight hitbox light
-				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 			}
 			else
 			{
-				//Flicker light
-				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+				//Flicker flashlight
+				if (FlashLightPivot->bHiddenInGame == true)
+				{
+					FlashLightPivot->SetHiddenInGame(false);
+				}
+				else if(FlashLightPivot->bHiddenInGame == false)
+				{
+					FlashLightPivot->SetHiddenInGame(true);
+				}
+
+				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 			}
 		}
 		else
@@ -265,7 +289,7 @@ void AMyPlayer::LightBehaviour()
 			if (LaserCharger > 0)
 			{
 				LaserCharger = LaserCharger - (LightReturnSpeed * (ReloadSpeedCurrent * Time));
-				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (FlashLightScaleModifier - LaserCharger)), LightScaleCurrent.Z));
+				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 			}
 		}
 	}
@@ -275,6 +299,15 @@ void AMyPlayer::LightBehaviour()
 void AMyPlayer::LookAtMouse()
 {
 
+}
+
+void AMyPlayer::CooledDown()
+{
+	LaserPivot->SetRelativeLocation(LaserLocationDefault);//Set location of Laser hitbox in hide location
+
+	FlashLightPivot->SetRelativeLocation(LightLocationDefault);//Set location of Flashlight hitbox ahead of the player
+	bIsCharging = false;
+	bJustShot = true;
 }
 
 

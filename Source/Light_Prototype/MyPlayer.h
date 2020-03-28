@@ -11,6 +11,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Math/TransformNonVectorized.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TimerManager.h"
 #include "MyPlayer.generated.h"
 
 UCLASS()
@@ -49,6 +50,8 @@ public:
 	//UPROPERTY(EditAnywhere, Category = "Mesh")
 		//class USkeletalMeshComponent* PlayerMesh;
 
+	FTimerHandle MyTimerHandle;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 		bool bIsCharging;
@@ -64,9 +67,11 @@ public:
 		int32 DamageTaken;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
 		float FlashLightScaleModifier;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
+		float ShootingTime;
 
 
-	//Values for powerups
+	//PowerUp Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
 		float PowerUpTime;//How long a power-up should last
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
@@ -78,9 +83,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
 		float ReloadSpeedUpgraded;//How fast you reload when you have the upgraded reload pickup
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float UpgradeLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
+		float PowerUpLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float UpgradeLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
+		float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
 
 		//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
@@ -149,6 +154,7 @@ public:
 	void Shoot();
 	void ChargeUp();
 	void LookAtMouse();
+	void CooledDown();
 
 
 
