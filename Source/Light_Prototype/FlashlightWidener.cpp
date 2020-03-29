@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MyPlayer.h"
 #include "FlashlightWidener.h"
+#include "MyPlayer.h"
 
 AFlashlightWidener::AFlashlightWidener()
 {

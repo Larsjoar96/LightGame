@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MyPlayer.h"
 #include "Pickup_LaserWidener.h"
+#include "MyPlayer.h"
 
 APickup_LaserWidener::APickup_LaserWidener()
 {

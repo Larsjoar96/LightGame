@@ -2,6 +2,7 @@
 
 
 #include "MyPlayer.h"
+#include "Herder.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -54,13 +55,13 @@ AMyPlayer::AMyPlayer()
 	// Left point
 	LeftPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftPoint"));
 	LeftPoint->SetupAttachment(ParentOfPoints);
-	LeftPoint->SetRelativeRotation(FRotator(0.0f, 225.0f, 0.0f));
+	LeftPoint->SetRelativeRotation(FRotator(0.0f, 230.0f, 0.0f));
 	LeftPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
 	// Right point
 	RightPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightPoint"));
 	RightPoint->SetupAttachment(ParentOfPoints);
-	RightPoint->SetRelativeRotation(FRotator(0.0f, -225.0f, 0.0f));
+	RightPoint->SetRelativeRotation(FRotator(0.0f, -230.0f, 0.0f));
 	RightPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
 	// Distance variables for Left/Right point
@@ -161,7 +162,6 @@ void AMyPlayer::BeginPlay()
 	RightPoint->SetRelativeLocation(RightForward * RightDistance);
 
 	// Start looking for OverlapEvents in the following colliders:
-	BehindCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::BehindOverlapBegin);
 	BehindCollider->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::BehindOverlapEnd);
 	LeftCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::LeftOverlapBegin);
 	RightCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::RightOverlapBegin);
@@ -399,34 +399,67 @@ void AMyPlayer::CooledDown()
 }
 
 
-void AMyPlayer::BehindOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Behind Begin"))
-}
-
 void AMyPlayer::BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Behind End"))
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			if (Herder->bStageOneComplete)
+			{
+				Herder->bStageOneComplete = false;
+			}
+		}
+	}
 }
 
 void AMyPlayer::LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Left Begin"))
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizeLeft = true;
+		}
+	}
 }
 
 void AMyPlayer::RightOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Right Begin"))
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizeLeft = false;
+		}
+	}
 }
 
 void AMyPlayer::MidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Mid Begin"))
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizePlayer = true;
+		}
+	}
 }
 
 void AMyPlayer::ReduceDistance()
