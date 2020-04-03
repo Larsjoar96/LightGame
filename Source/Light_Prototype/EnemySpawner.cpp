@@ -68,8 +68,8 @@ void AEnemySpawner::BeginPlay()
 			EnemyInt = (int32)EnemyPtr->EnemyLabel;
 
 			// Checks if the enemy is supposed to be spawned at this spawner.
-			// This is the reason why I converted the enum constants over to int32.
-			// Both sides of the '==' have to be the same data type.
+			// This is the reason why I converted the enum constants over to int32;
+			// as both sides of the '==' have to be the same data type.
 			if (SpawnInt == EnemyInt) Enemies.Add(EnemyPtr);
 		}
 	}
@@ -82,10 +82,28 @@ void AEnemySpawner::Tick(float DeltaTime)
 
 }
 
+void AEnemySpawner::ShuffleArray(TArray<AEnemy*> Array)
+{
+	int32 Size{Array.Num()};
+	int32 Index{0};
+	AEnemy* Temp;
+
+	// Simple shuffling where I switch spots with the first element and a random element.
+	// Then do the same for the seconds element, third, fourth... until it has reached the end.
+	while (Index < Size)
+	{
+		int32 RandomIndex{ UKismetMathLibrary::RandomInteger(Size) };
+		Temp = Enemies[Index];
+		Enemies[Index] = Enemies[RandomIndex];
+		Enemies[RandomIndex] = Temp;
+		Index++;
+	}
+}
+
 void AEnemySpawner::SpawnNextWave()
 {
 	// Spawn Delay
-	float RandomSpawnDelay = 0.5f;
+	float RandomSpawnDelay{0.5f};
 	RandomSpawnDelay *= UKismetMathLibrary::RandomFloat();
 
 	// If there are more waves to spawn.
@@ -97,11 +115,25 @@ void AEnemySpawner::SpawnNextWave()
 		// Resets values for incoming wave
 		CurrentIndex = 0;
 		MaxIndex = Waves[CurrentWave];
+
+		// Checks if level designer has decided to spawn enemies who don't exist.
+		// If this for example is an EnemySpawner with ESpawnLabel = Label_Two, and there are
+		// 7 enemies in total with Label_Two located in the spawn pool. 
+		// If you then tell the spawner to spawn 8+ enemies, there will be enemies missing of that label.
+		if (MaxIndex > Enemies.Num())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Not enough enemies in pool to spawn %d enemies!"), MaxIndex)
+			MaxIndex = 0;
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Spawns : %i"), MaxIndex)
 
 		// If there are supposed to spawn enemies this wave (only this spawner)
 		if (MaxIndex > 0)
 		{
+			// Shuffle the order of the enemies if there are supposed to spawn more than one enemy this wave
+			if (MaxIndex != 1) ShuffleArray(Enemies);
+
+			// Start spawning enemies
 			bEmptyWave = false;
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (2.0f + RandomSpawnDelay));
 		}
