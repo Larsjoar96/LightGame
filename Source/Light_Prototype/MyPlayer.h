@@ -77,24 +77,22 @@ public:
 	FHitResult* HitResult;
 	FCollisionQueryParams* TraceParams;
 
-	// Flashlight colliders
+
+	UPROPERTY()
+	float Time;
+
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class UBoxComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* FlashLightPivot;
 
-	// Laser Colliders
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class UBoxComponent* LaserCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* LaserPivot;
 
-	//Hardcode mesh and springarm/camera?
 	//UPROPERTY(EditAnywhere, Category = "Mesh")
 		//class USkeletalMeshComponent* PlayerMesh;
-
-	UPROPERTY()
-	float Time;
 
 	FTimerHandle MyTimerHandle;
 
@@ -201,6 +199,7 @@ public:
 	void ChargeUp();
 	void LookAtMouse();
 	void CooledDown();
+
 
 	// Functions for Left/Right points (connected to Herder AI behaviour)
 	void ReduceDistance();

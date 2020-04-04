@@ -196,7 +196,8 @@ void AMyPlayer::Tick(float DeltaTime)
 			//End damagefeedback here....
 			TimeRecovering = 0;
 		}
-	}
+
+}
 
 	// Always set the points to be the furthest distance possible (closest to 700)
 	// This distance will be reduced to a valid distance in the function ReduceDistance();
@@ -239,7 +240,7 @@ void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PEW!"));
 
-			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X,LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
+			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
 
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
 
@@ -316,7 +317,7 @@ void AMyPlayer::TakeDamageTho()
 
 	if (PlayerHealth <= 0)
 	{
-		this -> Destroy();
+		this->Destroy();
 	}
 	else
 	{
@@ -364,7 +365,7 @@ void AMyPlayer::LightBehaviour()
 				{
 					FlashLightPivot->SetHiddenInGame(false);
 				}
-				else if(FlashLightPivot->bHiddenInGame == false)
+				else if (FlashLightPivot->bHiddenInGame == false)
 				{
 					FlashLightPivot->SetHiddenInGame(true);
 				}

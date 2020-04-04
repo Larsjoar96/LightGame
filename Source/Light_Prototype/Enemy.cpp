@@ -12,7 +12,7 @@
 // Sets default values
 AEnemy::AEnemy()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Create component for Arena detector
@@ -65,9 +65,9 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(bBeingStunned)
+	if (bBeingStunned)
 	{
-		if(TimeInFlashlight < TimeUntilStunned) 
+		if (TimeInFlashlight < TimeUntilStunned)
 		{
 			TimeInFlashlight += DeltaTime;
 			Stunning();
@@ -81,7 +81,7 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		TimeInFlashlight -= DeltaTime;
 
-		if(TimeInFlashlight <= 0) 
+		if (TimeInFlashlight <= 0)
 		{
 			TimeInFlashlight = 0;
 			Rally();
@@ -121,15 +121,15 @@ void AEnemy::ArenaEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->IsA<UBoxComponent>()) 
+	if (OtherComp->IsA<UBoxComponent>())
 	{
 		if (OtherComp->ComponentHasTag("Flashlight"))//Is it overlapping with flashlight?
 		{
 			Player = Cast <AMyPlayer>(OtherComp->GetOwner());//Set Player reference to be equal to the player
 
-			if(Player->bJustShot == false)//Check if player just fired a shot
+			if (Player->bJustShot == false)//Check if player just fired a shot
 			{
-					bBeingStunned = true;
+				bBeingStunned = true;
 
 			}
 
@@ -182,7 +182,7 @@ void AEnemy::AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 
 void AEnemy::Stunning()
 {
-	if(TimeInFlashlight >= TimeUntilStunned)
+	if (TimeInFlashlight >= TimeUntilStunned)
 	{
 		bIsStunned = true;
 		GetCharacterMovement()->MaxWalkSpeed = 0;
@@ -205,7 +205,7 @@ void AEnemy::Rally()
 
 void AEnemy::Die()
 {
-	if(bIsStunned)
+	if (bIsStunned)
 	{
 		SetActorLocation(SpawnPoolLocation);
 	}
