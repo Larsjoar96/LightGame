@@ -25,17 +25,13 @@ AArenaManager::AArenaManager()
 	EnterArenaCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	EnterArenaCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-	// Set position and mesh in blueprint (because it's different for each platform). Level designer's work
+	// Set position and mesh in blueprint (because it's different for each platform)
 	EnterPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EnterPlatform"));
 	EnterPlatform->SetupAttachment(ArenaVolume);
 
-	// Set position and mesh in blueprint (because it's different for each platform). Level designer's work
+	// Set position and mesh in blueprint (because it's different for each platform)
 	ExitPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ExitPlatform"));
 	ExitPlatform->SetupAttachment(ArenaVolume);
-
-	// Adjust size and mesh in blueprint.
-	MainPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MainPlatform"));
-	MainPlatform->SetupAttachment(ArenaVolume);
 
 	// Assign default values
 	bLowerPlatforms = false;

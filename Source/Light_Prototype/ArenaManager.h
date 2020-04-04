@@ -27,13 +27,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Arena")
 	class UBoxComponent* EnterArenaCollider;
 
-	// Enter/Exit Platforms should be lowered/raised when entering the arena
+	// Platforms which should be lowered/raised when entering the arena
 	UPROPERTY(EditAnywhere, Category = "Arena")
 	class UStaticMeshComponent* EnterPlatform;
 	UPROPERTY(EditAnywhere, Category = "Arena")
-	class UStaticMeshComponent* ExitPlatform;
-	UPROPERTY(EditAnywhere, Category = "Arena")
-	class UStaticMeshComponent* MainPlatform;
+	class UStaticMeshComponent* ExitPlatform;;
 
 	// Fill up array with the spawners which should be affected by this manager
 	UPROPERTY(EditAnywhere, Category = "EnemySpawners")
