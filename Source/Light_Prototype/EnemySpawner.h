@@ -57,7 +57,8 @@ public:
 	int32 AmountOfWaves;
 
 	// Number of waves can be changed by just increasing the number of elements.
-	// Waves will continue to spawn as long as there are at least one enemy to spawn.
+	// Waves will continue to spawn as long as there are at least one enemy to spawn in CurrentWave,
+	// so you can change the amount of waves to 3000, and it will still work.
 	UPROPERTY(EditAnywhere, Category = "MyVariables | Waves")
 	int32 Waves[5];
 
@@ -71,6 +72,8 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void ShuffleArray(TArray<AEnemy*> Array);
 
 	// Spawn next enemy in line
 	void SpawnEnemies();

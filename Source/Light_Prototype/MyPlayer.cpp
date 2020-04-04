@@ -2,6 +2,7 @@
 
 
 #include "MyPlayer.h"
+#include "Herder.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -19,6 +20,50 @@ AMyPlayer::AMyPlayer()
 	LaserPivot->SetRelativeScale3D(FVector(.25f, .25f, .25f));
 	LaserPivot->SetRelativeLocation(FVector(40, 0.f, 0.f));
 
+	// Colliders for Herder AI Behvaiour
+	BehindCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BehindCollider"));
+	BehindCollider->SetupAttachment(HerderAI);
+	BehindCollider->SetRelativeLocation(FVector(-750.0f, 0.0f, 40.0f));
+	BehindCollider->SetBoxExtent(FVector(750.0f, 700.0f, 80.0f));
+
+	LeftCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LetCollider"));
+	LeftCollider->SetupAttachment(HerderAI);
+	LeftCollider->SetRelativeLocation(FVector(0.0f, -800.0f, 40.0f));
+	LeftCollider->SetBoxExtent(FVector(1500.0f, 800.0f, 80.0f));
+
+	RightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCollider"));
+	RightCollider->SetupAttachment(HerderAI);
+	RightCollider->SetRelativeLocation(FVector(0.0f, 800.0f, 40.0f));
+	RightCollider->SetBoxExtent(FVector(1500.0f, 800.0f, 80.0f));
+
+	MidCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("MidCollider"));
+	MidCollider->SetupAttachment(HerderAI);
+	MidCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 40.0f));
+	MidCollider->SetBoxExtent(FVector(150.0f, 150.0f, 80.0f));
+
+	// Left point
+	LeftPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftPoint"));
+	LeftPoint->SetupAttachment(ParentOfPoints);
+	LeftPoint->SetRelativeRotation(FRotator(0.0f, 230.0f, 0.0f));
+	LeftPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	// Right point
+	RightPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightPoint"));
+	RightPoint->SetupAttachment(ParentOfPoints);
+	RightPoint->SetRelativeRotation(FRotator(0.0f, -230.0f, 0.0f));
+	RightPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	// Distance variables for Left/Right point
+	LeftDistance = 700.0f;
+	RightDistance = 700.0f;
+
+	// VALUES
+	LengthOfTrace = 700.0f;
+	DirectionOfTrace = FVector(0.0f, 0.0f, -1.0f);
+	TraceParams = new FCollisionQueryParams();
+	HitResult = new FHitResult();
+	RightValid = true;
+	LeftValid = true;
 
 	//PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
 
@@ -58,8 +103,6 @@ AMyPlayer::AMyPlayer()
 	DamageTaken = 1;
 	ShootingTime = 0.2f;
 
-
-
 }
 
 // Called when the game starts or when spawned
@@ -91,6 +134,27 @@ void AMyPlayer::BeginPlay()
 	LaserPivot->SetRelativeRotation(LaserRotationDefault);
 	FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 	FlashLightPivot->SetRelativeRotation(LightRotationDefault);
+
+	// Points behind player spawned at different locations (affected by intial this->ActorRotation)
+	// Because I set their location further down as 'SetRelativeLocation', they spawned at twice the
+	// rotation of GetActorRotation(). To fix this, I made the parent of these points half the rotation
+	// of GetActorRotation(). This will spawn them at the intended location.
+	float Yaw{ GetActorRotation().Yaw / 2};
+	ParentOfPoints->SetWorldRotation(FRotator(0.0f, Yaw, 0.0f));
+
+	// Forward vectors of left/right point
+	LeftForward = LeftPoint->GetForwardVector();
+	RightForward = RightPoint->GetForwardVector();
+
+	// Set left/right point at correct distance/locations
+	LeftPoint->SetRelativeLocation(LeftForward * LeftDistance);
+	RightPoint->SetRelativeLocation(RightForward * RightDistance);
+
+	// Start looking for OverlapEvents in the following colliders:
+	BehindCollider->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::BehindOverlapEnd);
+	LeftCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::LeftOverlapBegin);
+	RightCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::RightOverlapBegin);
+	MidCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::MidOverlapBegin);
 
 }
 
@@ -310,4 +374,124 @@ void AMyPlayer::CooledDown()
 }
 
 
+void AMyPlayer::BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			if (Herder->bStageOneComplete)
+			{
+				Herder->bStageOneComplete = false;
+			}
+		}
+	}
+}
+
+void AMyPlayer::LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizeLeft = true;
+		}
+	}
+}
+
+void AMyPlayer::RightOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizeLeft = false;
+		}
+	}
+}
+
+void AMyPlayer::MidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizePlayer = true;
+		}
+	}
+}
+
+void AMyPlayer::ReduceDistance()
+{
+	CheckLeftValid();
+	CheckRightValid();
+
+	while (!LeftValid)
+	{
+		// Smaller decrements will reduce performance drastically, but will increase accuracy.
+		// If you set the points to be visible in-game, you can see what I mean.
+		// If the points were supposed to be visible to the player, I would've figured out
+		// a more efficient, smoother solution.
+		LeftDistance -= 60.0f;
+		LeftPoint->SetRelativeLocation(LeftForward * LeftDistance);
+		CheckLeftValid();
+		if (LeftDistance <= 70.0f) break;
+	}
+
+	while (!RightValid)
+	{
+		// Smaller decrements will reduce performance drastically, but will increase accuracy.
+		// If you set the points to be visible in-game, you can see what I mean.
+		// If the points were supposed to be visible to the player, I would've figured out
+		// a more efficient, smoother solution.
+		RightDistance -= 60.0f;
+		RightPoint->SetRelativeLocation(RightForward * RightDistance);
+		CheckRightValid();
+		if (RightDistance <= 70.0f) break;
+	}
+}
+
+void AMyPlayer::CheckLeftValid()
+{
+	FVector LeftStart = LeftPoint->GetComponentLocation();
+	FVector LeftEnd = LeftStart + (LengthOfTrace * DirectionOfTrace);
+
+	// Raycast from LeftPoint
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, LeftStart, LeftEnd, ECC_Visibility, *TraceParams))
+	{
+		//DrawDebugLine(GetWorld(), LeftStart, LeftEnd, FColor(255, 0, 0), true);
+		// If the object hit has tag "encounter", return valid. Else return false
+		LeftValid = (HitResult->Actor->ActorHasTag("encounter")) ? true : false;
+	}
+}
+
+void AMyPlayer::CheckRightValid()
+{
+	FVector RightStart = RightPoint->GetComponentLocation();
+	FVector RightEnd = RightStart + (LengthOfTrace * DirectionOfTrace);
+
+	// Raycast from RightPoint
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, RightStart, RightEnd, ECC_Visibility, *TraceParams))
+	{
+		//DrawDebugLine(GetWorld(), RightStart, RightEnd, FColor(255, 0, 0), true);
+		// If the object hit has tag "encounter", return valid. Else return false
+		RightValid = (HitResult->Actor->ActorHasTag("encounter")) ? true : false;
+	}
+}
 

@@ -35,115 +35,115 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY()
-		float Time;
+	float Time;
 
 	UPROPERTY(EditAnywhere, Category = "Collider")
-		class UBoxComponent* FlashLightCollider;
+	class UBoxComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
-		class USphereComponent* FlashLightPivot;
+	class USphereComponent* FlashLightPivot;
 
 	UPROPERTY(EditAnywhere, Category = "Collider")
-		class UBoxComponent* LaserCollider;
+	class UBoxComponent* LaserCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
-		class USphereComponent* LaserPivot;
+	class USphereComponent* LaserPivot;
 
 	//UPROPERTY(EditAnywhere, Category = "Mesh")
-		//class USkeletalMeshComponent* PlayerMesh;
+	//class USkeletalMeshComponent* PlayerMesh;
 
 	FTimerHandle MyTimerHandle;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		bool bIsCharging;
+	bool bIsCharging;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		bool bHasPowerUp;
+	bool bHasPowerUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		bool bJustShot;
+	bool bJustShot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
-		bool bJustTookDamage;
+	bool bJustTookDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerStats")
-		int32 PlayerHealth;
+	int32 PlayerHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
-		int32 DamageTaken;
+	int32 DamageTaken;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		float FlashLightScaleModifier;
+	float FlashLightScaleModifier;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float ShootingTime;
+	float ShootingTime;
 
 
 	//PowerUp Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float PowerUpTime;//How long a power-up should last
+	float PowerUpTime;//How long a power-up should last
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float PowerUpTimeLeft;//How much time there is left of a power-up
+	float PowerUpTimeLeft;//How much time there is left of a power-up
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float ReloadSpeedDefault;//How fast you reload without any upgrades
+	float ReloadSpeedDefault;//How fast you reload without any upgrades
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float ReloadSpeedCurrent;//How fast you are currently reloading
+	float ReloadSpeedCurrent;//How fast you are currently reloading
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float ReloadSpeedUpgraded;//How fast you reload when you have the upgraded reload pickup
+	float ReloadSpeedUpgraded;//How fast you reload when you have the upgraded reload pickup
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float PowerUpLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
+	float PowerUpLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
-		float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
+	float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
 
 		//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float LightReduceScaleMod;//Helps make the flashlight scale down
+	float LightReduceScaleMod;//Helps make the flashlight scale down
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float LightReturnSpeed;//Affects how fast your light returns if you let go before fully charged
+	float LightReturnSpeed;//Affects how fast your light returns if you let go before fully charged
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float LaserCharger;//Charges up finishing move
+	float LaserCharger;//Charges up finishing move
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float LaserFullyCharged;//When your finishing move is fully charged
+	float LaserFullyCharged;//When your finishing move is fully charged
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-		float ColliderLocationOffset;//When your finishing move is fully charged
+	float ColliderLocationOffset;//When your finishing move is fully charged
 
 		//Values for damage invincibility after taking damage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
-		float TimeRecovering;//How long you have been in "recovery state"
+	float TimeRecovering;//How long you have been in "recovery state"
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
-		float TimeToRecover;//How long it will take you to lose invincibility from taking damage
+	float TimeToRecover;//How long it will take you to lose invincibility from taking damage
 
 		//Transforms for the light cone
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightLocationDefault;
+	FVector LightLocationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightScaleDefault;
+	FVector LightScaleDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FRotator LightRotationDefault;
+	FRotator LightRotationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightLocationCurrent;
+	FVector LightLocationCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightScaleCurrent;
+	FVector LightScaleCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FRotator LightRotationCurrent;
+	FRotator LightRotationCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightLocationPoweredUp;
+	FVector LightLocationPoweredUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FVector LightScalePoweredUp;
+	FVector LightScalePoweredUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
-		FRotator LightRotationPoweredUp;
+	FRotator LightRotationPoweredUp;
 
 	//Transforms for the finishing move
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserLocationDefault;
+	FVector LaserLocationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserScaleDefault;
+	FVector LaserScaleDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FRotator LaserRotationDefault;
+	FRotator LaserRotationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserLocationCurrent;
+	FVector LaserLocationCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserScaleCurrent;
+	FVector LaserScaleCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FRotator LaserRotationCurrent;
+	FRotator LaserRotationCurrent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserLocationPoweredUp;
+	FVector LaserLocationPoweredUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FVector LaserScalePoweredUp;
+	FVector LaserScalePoweredUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
-		FRotator LaserRotationPoweredUp;
+	FRotator LaserRotationPoweredUp;
 
 	void PickupEventBiggerFlashlight();
 	void PickupEventBiggerLaser();
@@ -156,11 +156,22 @@ public:
 	void LookAtMouse();
 	void CooledDown();
 
+	// Functions for Left/Right points (connected to Herder AI behaviour)
+	void ReduceDistance();
+	void CheckLeftValid();
+	void CheckRightValid();
 
+	UFUNCTION()
+	void BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+	void LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
-
+	UFUNCTION()
+	void RightOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
 };
