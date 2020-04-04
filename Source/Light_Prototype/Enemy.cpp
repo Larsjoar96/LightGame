@@ -188,9 +188,8 @@ void AEnemy::Stunning()
 		GetCharacterMovement()->MaxWalkSpeed = 0;
 		//Function for material change needed
 	}
-	else
+	else if (!bIsStunned)
 	{
-		bIsStunned = false;
 		GetCharacterMovement()->MaxWalkSpeed = TopSpeed - (TimeInFlashlight * MovementSpeedReduction);
 		//Function for material change needed
 	}

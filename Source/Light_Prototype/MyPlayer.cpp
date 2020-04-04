@@ -357,6 +357,10 @@ void AMyPlayer::LightBehaviour()
 				FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 				//Change scale of Flashlight hitbox light
 				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
+
+				//Recheck overlap events
+				FlashLightPivot->SetRelativeLocation(LightLocationDefault - ColliderLocationOffset);
+				FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 			}
 			else
 			{

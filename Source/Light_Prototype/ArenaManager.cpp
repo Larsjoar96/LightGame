@@ -40,12 +40,14 @@ AArenaManager::AArenaManager()
 	// Assign default values
 	bLowerPlatforms = false;
 	bRaisePlatforms = false;
+	CalculatedEnter = 0.0f;
+	CalculatedExit = 0.0f;
 	bEncounterComplete = 0;
 	AmountOfSpawners = 0;
+	EnterAltitude = 3.0f;
+	ExitAltitude = 3.0f;
 	TimePassed = 0.0f;
 	EnemiesLeft = 0;
-	LoweringZ = 0.0f;
-	RaisingZ = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -76,20 +78,24 @@ void AArenaManager::Tick(float DeltaTime)
 	if (bLowerPlatforms == true)
 	{
 		// Lower platforms
+		// The altitude of Enter/Exit platforms are set in editor by level designers
 		TimePassed += DeltaTime;
-		LoweringZ = (-2.6f) * UKismetMathLibrary::Cos(TimePassed - (UKismetMathLibrary::GetPI() / 2));
-		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, LoweringZ));
-		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, LoweringZ));
+		CalculatedEnter = (-EnterAltitude) * UKismetMathLibrary::Cos(TimePassed - (UKismetMathLibrary::GetPI() / 2));
+		CalculatedExit = (-ExitAltitude) * UKismetMathLibrary::Cos(TimePassed - (UKismetMathLibrary::GetPI() / 2));
+		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter));
+		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit));
 		if (TimePassed >= (UKismetMathLibrary::GetPI() / 2)) bLowerPlatforms = false;
 	}
 
 	if (bRaisePlatforms == true)
 	{
 		// Raise platforms
+		// The altitude of Enter/Exit platforms are set in editor by level designers
 		TimePassed += DeltaTime;
-		RaisingZ = (-2.6f) * UKismetMathLibrary::Cos(TimePassed + (UKismetMathLibrary::GetPI()));
-		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, RaisingZ));
-		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, RaisingZ));
+		CalculatedEnter = (-EnterAltitude) * UKismetMathLibrary::Cos(TimePassed + (UKismetMathLibrary::GetPI()));
+		CalculatedExit = (-ExitAltitude) * UKismetMathLibrary::Cos(TimePassed + (UKismetMathLibrary::GetPI()));
+		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter));
+		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit));
 		if (TimePassed >= (UKismetMathLibrary::GetPI() / 2)) bRaisePlatforms = false;
 	}
 }

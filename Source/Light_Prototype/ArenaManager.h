@@ -36,7 +36,7 @@ public:
 	class UStaticMeshComponent* MainPlatform;
 
 	// Fill up array with the spawners which should be affected by this manager
-	UPROPERTY(EditAnywhere, Category = "EnemySpawners")
+	UPROPERTY(EditAnywhere, Category = "My Variables")
 	TArray<class AEnemySpawner*> EnemySpawners;
 
 	int32 EnemiesLeft;
@@ -45,8 +45,16 @@ public:
 
 	float TimePassed;
 
+	// Distance EnterPlatform needs to travel when raising/lowering. Reasonable values range: 2.0 - 6.0
+	UPROPERTY(EditAnywhere, Category = "My Variables")
+	float EnterAltitude;
+
+	// Distance ExitPlatform needs to travel when raising/lowering. Reasonable values range: 2.0 - 6.0
+	UPROPERTY(EditAnywhere, Category = "My Variables")
+	float ExitAltitude;
+
 	// Calculated Z-values for lowering and raising enter/exit platforms
-	float LoweringZ, RaisingZ;
+	float CalculatedEnter, CalculatedExit;
 
 	bool bEncounterComplete;
 
