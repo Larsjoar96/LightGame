@@ -32,6 +32,13 @@ APickup::APickup()
 	// Mesh got its own collision, we don't want to control any functionalities through that collision
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+
+	//Set rotation speed of pickup
+	PitchValue = 0.0f;
+	YawValue = 1.0f;
+	RollValue = 0.0f;
+
 }
 
 // Called when the game starts or when spawned
@@ -47,6 +54,12 @@ void APickup::BeginPlay()
 void APickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//Set rotation of mushrooms every frame to make them spin
+	//Got help from this page: https://unrealcpp.com/rotating-actor/
+	FRotator NewRotation = FRotator(PitchValue, YawValue, RollValue);
+	FQuat QuatRotation = FQuat(NewRotation);
+	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
 
 }
 

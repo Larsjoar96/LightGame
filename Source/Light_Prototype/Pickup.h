@@ -34,4 +34,13 @@ public:
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 								int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UPROPERTY(EditAnywhere, Category = "Rotation")
+	float PitchValue;
+
+	UPROPERTY(EditAnywhere, Category = "Rotation")
+	float YawValue;
+
+	UPROPERTY(EditAnywhere, Category = "Rotation")
+	float RollValue;
+
 };
