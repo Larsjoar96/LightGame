@@ -112,7 +112,7 @@ AMyPlayer::AMyPlayer()
 	//Combat values
 	PlayerHealth = 5;
 	DamageTaken = 1;
-	ShootingTime = 0.2f;
+	ShootingTime = 0.03f;
 
 
 }
@@ -220,7 +220,7 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMyPlayer::ChargeUp);
-	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMyPlayer::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMyPlayer::StopCharging);
 }
 
 void AMyPlayer::ChargeUp()//Hold button to charge 
@@ -243,16 +243,14 @@ void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
 
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
-
-
-		}
-		else
-		{
-			bIsCharging = false;
-			FlashLightPivot->SetRelativeLocation(LightLocationDefault);
-
 		}
 	}
+}
+
+void AMyPlayer::StopCharging()
+{
+	bIsCharging = false;
+	FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 }
 
 void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
@@ -332,6 +330,17 @@ void AMyPlayer::LightBehaviour()
 		if (LaserCharger >= LaserFullyCharged) //Are you fully charged ?
 		{
 			FlashLightPivot->SetRelativeLocation(FVector(LightLocationDefault.X, LightLocationDefault.Y, LightLocationDefault.Z - ColliderLocationOffset));//HideFlashlight
+			if(bIsShooting == true)
+			{
+				StopCharging();
+				bIsShooting = false;
+			}
+			else
+			{
+				Shoot();
+				bIsShooting = true;
+			}
+
 
 		}
 		if (LaserCharger < LaserFullyCharged)

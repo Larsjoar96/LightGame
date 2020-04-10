@@ -61,6 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float RightDistance;
 
+
 	// Vectors used by Herder AI as destinations for Stage One
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	FVector LeftPointLocation;
@@ -103,6 +104,8 @@ public:
 	bool bHasPowerUp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	bool bJustShot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
+	bool bIsShooting;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
 	bool bJustTookDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerStats")
@@ -199,6 +202,7 @@ public:
 	void ChargeUp();
 	void LookAtMouse();
 	void CooledDown();
+	void StopCharging();
 
 
 	// Functions for Left/Right points (connected to Herder AI behaviour)
