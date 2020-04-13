@@ -34,7 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MyVariables | Enums")
 	EEnemyLabel EnemyLabel;
 
-	// ArenaDetector is communicating with its ArenaManager about OverlapEvents
+	// ArenaDetector is communicating with its ArenaManager regarding OverlapEvents
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* ArenaDetector;
 
@@ -43,6 +43,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* LaserDetector;
+
+	//class UMaterialInstanceDynamic* EnemyMaterial;
 
 	UPROPERTY()
 	class AMyPlayer* Player;

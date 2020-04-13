@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "MyPlayer.h"
 #include "ArenaManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -27,6 +28,8 @@ AEnemy::AEnemy()
 	LaserDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserDetector"));
 	LaserDetector->SetupAttachment(GetRootComponent());
 
+	// Material is dynamic, this is to be able to float between two colors while playing
+	//EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
 
 	// Default 'none' value, as a safety if you forgot to assign it in the editor
 	EnemyLabel = EEnemyLabel::ESL_None;
@@ -34,7 +37,7 @@ AEnemy::AEnemy()
 	TimeStunned = 3;
 	TimeUntilStunned = 2;
 	TimeInFlashlight = 0;
-	TopSpeed = 300;
+	TopSpeed = 230;
 	MovementSpeedReduction = 60;
 
 }
@@ -54,10 +57,7 @@ void AEnemy::BeginPlay()
 	LaserDetector->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::LaserBeginOverlap);
 	LaserDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::LaserEndOverlap);
 
-
 	SpawnPoolLocation = GetActorLocation();
-
-
 }
 
 // Called every frame
@@ -87,6 +87,25 @@ void AEnemy::Tick(float DeltaTime)
 			Rally();
 		}
 	}
+
+	// Adding gradient effect to material for feedback to player, regarding weakening progression.
+	// VERY IMPORTANT: when the real materials are imported and used, change the material from inside the node in 'MEnemyDefault'. 
+	// Don't swap the whole material class itself. This is to still keep the blueprint functionalities within the material.
+	UMaterialInstanceDynamic* EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
+	if (EnemyMaterial && !bIsStunned)
+	{
+		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
+	}
+
+	// Temporarily fix for addiational materials. In final game, we will only need one material per mesh.
+	// So I just copy pasted due to it being a temporarily fix.
+	UMaterialInstanceDynamic* TempMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
+	if (TempMaterial && !bIsStunned)
+	{
+		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
+	}
+	
+
 }
 
 // Called to bind functionality to input

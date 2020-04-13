@@ -68,7 +68,7 @@ AMyPlayer::AMyPlayer()
 	LeftDistance = 700.0f;
 	RightDistance = 700.0f;
 
-	// VALUES
+	// Assigning variables which are connected to Left/Right point
 	LengthOfTrace = 700.0f;
 	DirectionOfTrace = FVector(0.0f, 0.0f, -1.0f);
 	TraceParams = new FCollisionQueryParams();

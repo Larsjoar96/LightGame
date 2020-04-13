@@ -107,7 +107,7 @@ void AEnemySpawner::SpawnNextWave()
 	RandomSpawnDelay *= UKismetMathLibrary::RandomFloat();
 
 	// If there are more waves to spawn.
-	// This is how the values look like if we are about to spawn the third wave:
+	// This is how the values look like if we are supposed to spawn the third wave:
 	//       CurrentWave   = 2
 	//       AmountOfWaves = 3
 	if (CurrentWave < AmountOfWaves)
@@ -153,7 +153,7 @@ void AEnemySpawner::SpawnNextWave()
 // Recursive function
 void AEnemySpawner::SpawnEnemies()
 {
-	float RandomSpawnDelay = 0.5f;
+	float RandomSpawnDelay = 1.2f;
 	float RandomLaunchForce{};
 
 	UWorld* CurrentLevel = GetWorld();
@@ -164,18 +164,21 @@ void AEnemySpawner::SpawnEnemies()
 		AEnemy* SpawnedEnemy = Enemies[CurrentIndex];
 		if (SpawnedEnemy)
 		{
-			// Teleport enemy to spawn location and set its rotation to be equal to spawn rotation
-			SpawnedEnemy->SetActorLocation(StartPoint->GetComponentLocation());
+			// Teleport enemy to "spawn location" and set its rotation to be equal to spawner's rotation.
+			// "Spawn location" is this spawner's location + offset in in z-direction.
+			// This is so that enemies actually spawn below the water, while still being able to keep track 
+			// of where they will spawn, based on the location of this spawner's x- and y-values.
+			SpawnedEnemy->SetActorLocation(StartPoint->GetComponentLocation() + FVector(0.0f, 0.0f, -150.0f));
 			SpawnedEnemy->SetActorRotation(this->GetActorRotation());
 
 			// Assign random values for both variables
-			RandomSpawnDelay *= UKismetMathLibrary::RandomFloat();
-			RandomLaunchForce = UKismetMathLibrary::RandomFloatInRange(0.9f, 1.1f);
+			RandomSpawnDelay *= UKismetMathLibrary::RandomFloat(); // Will normalize the 'RandomSpawnDelay' randomly
+			RandomLaunchForce = UKismetMathLibrary::RandomFloatInRange(0.9f, 1.05f);
 
-			// 'LaunchVector' is calculated (by trial and error) to launch in the correct direction with the correct force
+			// 'LaunchVector' is calculated (through trial and error) to launch in the correct direction with the correct force
 			UCharacterMovementComponent* EnemyMovementComponent;
 			FVector LaunchDirection = this->GetActorForwardVector();
-			FVector LaunchVector = FVector(30000.0f * LaunchDirection.X, 30000.0f * LaunchDirection.Y, 100000.0f) * RandomLaunchForce;
+			FVector LaunchVector = FVector(28000.0f * LaunchDirection.X, 28000.0f * LaunchDirection.Y, 120000.0f) * RandomLaunchForce;
 
 			// Cast from PawnMovementComponent to CharacterMovementComponent to get access to 'AddImpulse()'
 			// I use 'AddImpulse()' to launch the enemy towards the platform at spawn time
@@ -183,8 +186,8 @@ void AEnemySpawner::SpawnEnemies()
 			EnemyMovementComponent->AddImpulse(LaunchVector, false);
 
 			CurrentIndex++;
-			// Add a little delay between each spawn with minimum delay being 0.45 seconds and max being 0.95 seconds
-			CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (0.45f + RandomSpawnDelay));
+			// Add a little delay between each spawn with minimum delay being 0.57 seconds and max being 1.77 seconds
+			CurrentLevel->GetTimerManager().SetTimer(MyTimerHandle, this, &AEnemySpawner::SpawnEnemies, (0.57f + RandomSpawnDelay));
 		}
 	}
 
