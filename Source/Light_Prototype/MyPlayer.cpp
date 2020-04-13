@@ -103,8 +103,8 @@ AMyPlayer::AMyPlayer()
 	//Initialize PowerUp Variables
 	PowerUpTime = 45.0f;
 	PowerUpTimeLeft = 0;
-	ReloadSpeedDefault = 1.0f;
-	ReloadSpeedCurrent = 1.0f;
+	ReloadSpeedDefault = 2.0f;
+	ReloadSpeedCurrent = 2.0f;
 	ReloadSpeedUpgraded = 4.0f;
 	PowerUpLightScale = 2.0f;
 	PowerUpLaserScale = 2.0f;
@@ -330,6 +330,7 @@ void AMyPlayer::LightBehaviour()
 		if (LaserCharger >= LaserFullyCharged) //Are you fully charged ?
 		{
 			FlashLightPivot->SetRelativeLocation(FVector(LightLocationDefault.X, LightLocationDefault.Y, LightLocationDefault.Z - ColliderLocationOffset));//HideFlashlight
+			//Make the laser shoot for one frame
 			if(bIsShooting == true)
 			{
 				StopCharging();

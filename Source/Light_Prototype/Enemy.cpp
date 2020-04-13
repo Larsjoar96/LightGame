@@ -32,7 +32,7 @@ AEnemy::AEnemy()
 	EnemyLabel = EEnemyLabel::ESL_None;
 
 	TimeStunned = 3;
-	TimeUntilStunned = 3;
+	TimeUntilStunned = 2;
 	TimeInFlashlight = 0;
 	TopSpeed = 300;
 	MovementSpeedReduction = 60;
