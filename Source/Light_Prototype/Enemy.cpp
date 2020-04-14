@@ -28,9 +28,6 @@ AEnemy::AEnemy()
 	LaserDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserDetector"));
 	LaserDetector->SetupAttachment(GetRootComponent());
 
-	// Material is dynamic, this is to be able to float between two colors while playing
-	//EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
-
 	// Default 'none' value, as a safety if you forgot to assign it in the editor
 	EnemyLabel = EEnemyLabel::ESL_None;
 
@@ -95,16 +92,7 @@ void AEnemy::Tick(float DeltaTime)
 	if (EnemyMaterial && !bIsStunned)
 	{
 		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
-	}
-
-	// Temporarily fix for addiational materials. In final game, we will only need one material per mesh.
-	// So I just copy pasted due to it being a temporarily fix.
-	UMaterialInstanceDynamic* TempMaterial = GetMesh()->CreateDynamicMaterialInstance(1);
-	if (TempMaterial && !bIsStunned)
-	{
-		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
-	}
-	
+	}	
 
 }
 

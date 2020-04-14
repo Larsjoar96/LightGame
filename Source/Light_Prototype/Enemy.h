@@ -44,8 +44,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* LaserDetector;
 
-	//class UMaterialInstanceDynamic* EnemyMaterial;
-
 	UPROPERTY()
 	class AMyPlayer* Player;
 

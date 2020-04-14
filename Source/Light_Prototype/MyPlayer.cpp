@@ -50,7 +50,7 @@ AMyPlayer::AMyPlayer()
 	MidCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("MidCollider"));
 	MidCollider->SetupAttachment(HerderAI);
 	MidCollider->SetRelativeLocation(FVector(0.0f, 0.0f, 40.0f));
-	MidCollider->SetBoxExtent(FVector(150.0f, 150.0f, 80.0f));
+	MidCollider->SetBoxExtent(FVector(175.0f, 175.0f, 80.0f));
 
 	// Left point
 	LeftPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftPoint"));
@@ -166,6 +166,7 @@ void AMyPlayer::BeginPlay()
 	LeftCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::LeftOverlapBegin);
 	RightCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::RightOverlapBegin);
 	MidCollider->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::MidOverlapBegin);
+	MidCollider->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::MidOverlapEnd);
 
 }
 
@@ -414,24 +415,6 @@ void AMyPlayer::CooledDown()
 }
 
 
-void AMyPlayer::BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherActor)
-	{
-		AHerder* Herder;
-		Herder = Cast<AHerder>(OtherActor);
-
-		if (Herder)
-		{
-			if (Herder->bStageOneComplete)
-			{
-				Herder->bStageOneComplete = false;
-			}
-		}
-	}
-}
-
 void AMyPlayer::LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -473,6 +456,40 @@ void AMyPlayer::MidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		if (Herder)
 		{
 			Herder->bPrioritizePlayer = true;
+		}
+	}
+}
+
+void AMyPlayer::MidOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			Herder->bPrioritizePlayer = false;
+			Herder->bStageOneComplete = false;
+		}
+	}
+}
+
+void AMyPlayer::BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		AHerder* Herder;
+		Herder = Cast<AHerder>(OtherActor);
+
+		if (Herder)
+		{
+			if (Herder->bStageOneComplete)
+			{
+				Herder->bStageOneComplete = false;
+			}
 		}
 	}
 }
