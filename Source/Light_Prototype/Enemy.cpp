@@ -34,7 +34,7 @@ AEnemy::AEnemy()
 	TimeStunned = 3;
 	TimeUntilStunned = 2;
 	TimeInFlashlight = 0;
-	TopSpeed = 230;
+	TopSpeed = 250;
 	MovementSpeedReduction = 60;
 
 }

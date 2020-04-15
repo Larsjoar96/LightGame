@@ -19,6 +19,9 @@ public:
 	// Sets default values for this actor's properties
 	AArenaManager();
 
+	// Simple root component
+	class USceneComponent* EmptyRootComp;
+
 	// Volume to keep count of enemies
 	UPROPERTY(EditAnywhere, Category = "Arena")
 	class UBoxComponent* ArenaVolume;

@@ -4,14 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/InputComponent.h"
 #include "Components/BoxComponent.h"
-#include "Components/SphereComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Math/TransformNonVectorized.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "TimerManager.h"
 #include "MyPlayer.generated.h"
 
 UCLASS()
@@ -70,8 +63,11 @@ public:
 
 	// Variables for Herder AI behaviour
 	float LengthOfTrace;
-	bool RightValid;
-	bool LeftValid;
+	bool bRightValid;
+	bool bLeftValid;
+	bool bPrioritizeReady;
+	bool bShouldFlicker;
+	bool bJustFlicked;
 	FVector LeftForward;
 	FVector RightForward;
 	FVector DirectionOfTrace;
@@ -96,6 +92,9 @@ public:
 		//class USkeletalMeshComponent* PlayerMesh;
 
 	FTimerHandle MyTimerHandle;
+
+	// TimerHandle for Herder AI Behaviour
+	FTimerHandle AITimerHandle;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
@@ -209,6 +208,7 @@ public:
 	void ReduceDistance();
 	void CheckLeftValid();
 	void CheckRightValid();
+	void PrioritizationTrue();
 
 
 	UFUNCTION()

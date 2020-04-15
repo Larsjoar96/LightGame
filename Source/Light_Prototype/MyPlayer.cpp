@@ -1,8 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#define COLLISION_AIAREA ECC_GameTraceChannel3
 
 #include "MyPlayer.h"
 #include "Herder.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/InputComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Math/TransformNonVectorized.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "TimerManager.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -40,12 +48,12 @@ AMyPlayer::AMyPlayer()
 	LeftCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LetCollider"));
 	LeftCollider->SetupAttachment(HerderAI);
 	LeftCollider->SetRelativeLocation(FVector(0.0f, -800.0f, 40.0f));
-	LeftCollider->SetBoxExtent(FVector(1500.0f, 800.0f, 80.0f));
+	LeftCollider->SetBoxExtent(FVector(1500.0f, 550.0f, 80.0f));
 
 	RightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCollider"));
 	RightCollider->SetupAttachment(HerderAI);
 	RightCollider->SetRelativeLocation(FVector(0.0f, 800.0f, 40.0f));
-	RightCollider->SetBoxExtent(FVector(1500.0f, 800.0f, 80.0f));
+	RightCollider->SetBoxExtent(FVector(1500.0f, 550.0f, 80.0f));
 
 	MidCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("MidCollider"));
 	MidCollider->SetupAttachment(HerderAI);
@@ -55,13 +63,13 @@ AMyPlayer::AMyPlayer()
 	// Left point
 	LeftPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftPoint"));
 	LeftPoint->SetupAttachment(ParentOfPoints);
-	LeftPoint->SetRelativeRotation(FRotator(0.0f, 230.0f, 0.0f));
+	LeftPoint->SetRelativeRotation(FRotator(0.0f, 245.0f, 0.0f));
 	LeftPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
 	// Right point
 	RightPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightPoint"));
 	RightPoint->SetupAttachment(ParentOfPoints);
-	RightPoint->SetRelativeRotation(FRotator(0.0f, -230.0f, 0.0f));
+	RightPoint->SetRelativeRotation(FRotator(0.0f, -245.0f, 0.0f));
 	RightPoint->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
 	// Distance variables for Left/Right point
@@ -73,8 +81,11 @@ AMyPlayer::AMyPlayer()
 	DirectionOfTrace = FVector(0.0f, 0.0f, -1.0f);
 	TraceParams = new FCollisionQueryParams();
 	HitResult = new FHitResult();
-	RightValid = true;
-	LeftValid = true;
+	bRightValid = true;
+	bLeftValid = true;
+	bPrioritizeReady = true;
+	bShouldFlicker = false;
+	bJustFlicked = false;
 
 	//PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
 
@@ -214,6 +225,27 @@ void AMyPlayer::Tick(float DeltaTime)
 	LeftPointLocation = LeftPoint->GetComponentLocation();
 	RightPointLocation = RightPoint->GetComponentLocation();
 
+	// Go to PrioritizationTrue() definition for explenation.
+	// This will basically generate an OverlapEvent for Left/Right colliders if AI
+	// is already located inside one of the colliders.
+	switch (bShouldFlicker)
+	{
+	case true:
+		LeftCollider->SetRelativeLocation(LeftCollider->GetRelativeLocation() + 1000.0f);
+		RightCollider->SetRelativeLocation(RightCollider->GetRelativeLocation() + 1000.0f);
+		bShouldFlicker = false;
+		bJustFlicked = true;
+		break;
+
+	case false:
+		if (bJustFlicked)
+		{
+			LeftCollider->SetRelativeLocation(LeftCollider->GetRelativeLocation() - 1000.0f);
+			RightCollider->SetRelativeLocation(RightCollider->GetRelativeLocation() - 1000.0f);
+			bJustFlicked = false;
+		}
+		break;
+	}
 }
 
 // Called to bind functionality to input
@@ -228,7 +260,7 @@ void AMyPlayer::ChargeUp()//Hold button to charge
 {
 	if (bJustShot == false)
 	{
-		bIsCharging = true;
+		bIsCharging = true; 
 	}
 }
 
@@ -415,6 +447,7 @@ void AMyPlayer::CooledDown()
 }
 
 
+// Left Box Collider for Herder AI Behaviour begin overlap
 void AMyPlayer::LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -423,13 +456,19 @@ void AMyPlayer::LeftOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		AHerder* Herder;
 		Herder = Cast<AHerder>(OtherActor);
 
-		if (Herder)
+		if (Herder && bPrioritizeReady == true && (Herder->bPrioritizeLeft == false))
 		{
+			// 'bPrioritizeReady' together with the 'AITimerHandle' makes sure that the AI can't re-prioritize 
+			// a new location before it has gone 2.0 seconds.
+			// This is to prevent the AI from walking left-right-left-right-left... in quick successions.
+			bPrioritizeReady = false;
+			GetWorld()->GetTimerManager().SetTimer(AITimerHandle, this, &AMyPlayer::PrioritizationTrue, 1.5f);
 			Herder->bPrioritizeLeft = true;
 		}
 	}
 }
 
+// Right Box Collider for Herder AI Behaviour begin overlap
 void AMyPlayer::RightOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -438,13 +477,19 @@ void AMyPlayer::RightOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		AHerder* Herder;
 		Herder = Cast<AHerder>(OtherActor);
 
-		if (Herder)
+		if (Herder && bPrioritizeReady == true && (Herder->bPrioritizeLeft == true))
 		{
+			// 'bPrioritizeReady' together with the 'AITimerHandle' makes sure that the AI can't re-prioritize 
+			// a new location before it has gone 2.0 seconds.
+			// This is to prevent the AI from walking left-right-left-right-left... in quick successions.
+			bPrioritizeReady = false;
+			GetWorld()->GetTimerManager().SetTimer(AITimerHandle, this, &AMyPlayer::PrioritizationTrue, 1.5f);
 			Herder->bPrioritizeLeft = false;
 		}
 	}
 }
 
+// Mid Box Collider for Herder AI Behaviour begin overlap
 void AMyPlayer::MidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -460,6 +505,7 @@ void AMyPlayer::MidOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	}
 }
 
+// Mid Box Collider for Herder AI Behaviour end overlap
 void AMyPlayer::MidOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
@@ -476,6 +522,7 @@ void AMyPlayer::MidOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 	}
 }
 
+// Behind Box Collider for Herder AI Behaviour end overlap
 void AMyPlayer::BehindOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
@@ -499,28 +546,28 @@ void AMyPlayer::ReduceDistance()
 	CheckLeftValid();
 	CheckRightValid();
 
-	while (!LeftValid)
+	while (!bLeftValid)
 	{
 		// Smaller decrements will reduce performance drastically, but will increase accuracy.
 		// If you set the points to be visible in-game, you can see what I mean.
 		// If the points were supposed to be visible to the player, I would've figured out
 		// a more efficient, smoother solution.
-		LeftDistance -= 60.0f;
+		LeftDistance -= 70.0f;
 		LeftPoint->SetRelativeLocation(LeftForward * LeftDistance);
 		CheckLeftValid();
-		if (LeftDistance <= 70.0f) break;
+		if (LeftDistance <= 80.0f) break;
 	}
 
-	while (!RightValid)
+	while (!bRightValid)
 	{
 		// Smaller decrements will reduce performance drastically, but will increase accuracy.
 		// If you set the points to be visible in-game, you can see what I mean.
 		// If the points were supposed to be visible to the player, I would've figured out
 		// a more efficient, smoother solution.
-		RightDistance -= 60.0f;
+		RightDistance -= 70.0f;
 		RightPoint->SetRelativeLocation(RightForward * RightDistance);
 		CheckRightValid();
-		if (RightDistance <= 70.0f) break;
+		if (RightDistance <= 80.0f) break;
 	}
 }
 
@@ -529,13 +576,10 @@ void AMyPlayer::CheckLeftValid()
 	FVector LeftStart = LeftPoint->GetComponentLocation();
 	FVector LeftEnd = LeftStart + (LengthOfTrace * DirectionOfTrace);
 
-	// Raycast from LeftPoint
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, LeftStart, LeftEnd, ECC_Visibility, *TraceParams))
-	{
-		//DrawDebugLine(GetWorld(), LeftStart, LeftEnd, FColor(255, 0, 0), true);
-		// If the object hit has tag "encounter", return valid. Else return false
-		LeftValid = (HitResult->Actor->ActorHasTag("encounter")) ? true : false;
-	}
+	// Line trace from right point, straight downwards.
+	// Return true/valid if trace hit an actor with collision channel: ECC_GameTraceChannel3, set to block.
+	// Else, return false/invalid (ECC_GameTraceChannel3 = my custom trace channel, called "AIArea").
+	bLeftValid = (GetWorld()->LineTraceSingleByChannel(*HitResult, LeftStart, LeftEnd, ECollisionChannel::COLLISION_AIAREA, *TraceParams) ? true : false);
 }
 
 void AMyPlayer::CheckRightValid()
@@ -543,11 +587,21 @@ void AMyPlayer::CheckRightValid()
 	FVector RightStart = RightPoint->GetComponentLocation();
 	FVector RightEnd = RightStart + (LengthOfTrace * DirectionOfTrace);
 
-	// Raycast from RightPoint
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, RightStart, RightEnd, ECC_Visibility, *TraceParams))
-	{
-		//DrawDebugLine(GetWorld(), RightStart, RightEnd, FColor(255, 0, 0), true);
-		// If the object hit has tag "encounter", return valid. Else return false
-		RightValid = (HitResult->Actor->ActorHasTag("encounter")) ? true : false;
-	}
+	// Line trace from right point, straight downwards.
+	// Return true/valid if trace hit an actor with collision channel: ECC_GameTraceChannel3, set to block.
+	// Else, return false/invalid (ECC_GameTraceChannel3 = my custom trace channel, called "AIArea").
+	bRightValid = (GetWorld()->LineTraceSingleByChannel(*HitResult, RightStart, RightEnd, ECollisionChannel::COLLISION_AIAREA, *TraceParams) ? true : false);
+
+}
+
+
+// Function is called by 'AITimerHandle' to turn 'bPrioritizeReady' back to true
+void AMyPlayer::PrioritizationTrue()
+{
+	bPrioritizeReady = true;
+
+	// Left and Right box colliders should flicker (teleport far away and back to its position in the span of 2 frames)
+	// This is to be able to generate an OverlapEvent whenever AI is already inside one of the box colliders
+	// when 'bPrioritizeReady' turns back to true. Just a solution to how Unreal detect OverlapEvents.
+	bShouldFlicker = true;
 }

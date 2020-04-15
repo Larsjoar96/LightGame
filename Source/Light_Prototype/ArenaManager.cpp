@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "EnemySpawner.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/SceneComponent.h"
 
 // Sets default values
 AArenaManager::AArenaManager()
@@ -13,13 +14,17 @@ AArenaManager::AArenaManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	EmptyRootComp = CreateDefaultSubobject<USceneComponent>(TEXT("EmptyRootComp"));
+	RootComponent = EmptyRootComp;
+
+	// ArenaVolume will keep track of: amount of enemies currently on level
 	ArenaVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("ArenaVolume"));
 	ArenaVolume->SetBoxExtent(FVector(500.0f, 700.0f, 200.0f));
-	SetRootComponent(ArenaVolume);
+	SetRootComponent(GetRootComponent());
 
 	// Make the collision only trigger OverlapEvents whenever the player collides
 	EnterArenaCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("EnterArenaCollider"));
-	EnterArenaCollider->SetupAttachment(ArenaVolume);
+	EnterArenaCollider->SetupAttachment(GetRootComponent());
 	EnterArenaCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	EnterArenaCollider->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	EnterArenaCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
@@ -27,15 +32,15 @@ AArenaManager::AArenaManager()
 
 	// Set position and mesh in blueprint (because it's different for each platform). Level designer's work
 	EnterPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EnterPlatform"));
-	EnterPlatform->SetupAttachment(ArenaVolume);
+	EnterPlatform->SetupAttachment(GetRootComponent());
 
 	// Set position and mesh in blueprint (because it's different for each platform). Level designer's work
 	ExitPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ExitPlatform"));
-	ExitPlatform->SetupAttachment(ArenaVolume);
+	ExitPlatform->SetupAttachment(GetRootComponent());
 
 	// Adjust size and mesh in blueprint.
 	MainPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MainPlatform"));
-	MainPlatform->SetupAttachment(ArenaVolume);
+	MainPlatform->SetupAttachment(GetRootComponent());
 
 	// Assign default values
 	bLowerPlatforms = false;
