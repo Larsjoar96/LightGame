@@ -66,7 +66,10 @@ public:
 	float TimeInFlashlight;//How long the enemy has been isnide flashlight
 
 	UPROPERTY(EditAnywhere)
-	float TopSpeed;//The fastest the enemy moves
+	float HerderTopSpeed;// Herder max walk speed
+
+	UPROPERTY(EditAnywhere)
+	float AnkelbiterTopSpeed;// Ankelbiter max walk speed
 
 	UPROPERTY(EditAnywhere)
 	float MoveAttackCollider;

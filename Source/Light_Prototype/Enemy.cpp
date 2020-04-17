@@ -8,7 +8,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "MyPlayer.h"
 #include "ArenaManager.h"
+#include "Herder.h"
+#include "Ankelbiter.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "GameFramework/Character.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -34,7 +37,8 @@ AEnemy::AEnemy()
 	TimeStunned = 3;
 	TimeUntilStunned = 2;
 	TimeInFlashlight = 0;
-	TopSpeed = 250;
+	HerderTopSpeed = 350.0f;
+	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
 
 }
@@ -197,7 +201,14 @@ void AEnemy::Stunning()
 	}
 	else if (!bIsStunned)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = TopSpeed - (TimeInFlashlight * MovementSpeedReduction);
+		if (Cast<AHerder>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed - (TimeInFlashlight * MovementSpeedReduction);
+		}
+		else if (Cast<AAnkelbiter>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed - (TimeInFlashlight * MovementSpeedReduction);
+		}
 		//Function for material change needed
 	}
 }
@@ -205,7 +216,15 @@ void AEnemy::Stunning()
 void AEnemy::Rally()
 {
 	bIsStunned = false;
-	GetCharacterMovement()->MaxWalkSpeed = TopSpeed;
+
+	if (Cast<AHerder>(this))
+	{
+		GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+	}
+	else if (Cast<AAnkelbiter>(this))
+	{
+		GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
+	}
 	//Function for material change needed
 }
 
