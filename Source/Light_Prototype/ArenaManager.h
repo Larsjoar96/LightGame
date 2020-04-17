@@ -38,6 +38,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Arena")
 	class UStaticMeshComponent* MainPlatform;
 
+	// Collision volume used for Left/Right point's raycast "goal". Basically a raycast detector.
+	// Decided to make it as a mesh, and not a BoxCollider. Because if the MainPlatform's mesh is of a more complex
+	// geometry, you can assign the same mesh for 'RaycastDetector'. It will then "block" out the encounter automatically,
+	// for a more accurate calculation.
+	// Why I'm not just using 'MainPlatform' as the raycast detector? Because this gives me more control of where the
+	// line traces should be able to detect the volume.
+	UPROPERTY(EditAnywhere, Category = "Arena")
+	class UStaticMeshComponent* HerderNavigatableArea;
+
 	// Fill up array with the spawners which should be affected by this manager
 	UPROPERTY(EditAnywhere, Category = "My Variables")
 	TArray<class AEnemySpawner*> EnemySpawners;

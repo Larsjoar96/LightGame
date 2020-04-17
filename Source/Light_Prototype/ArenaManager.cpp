@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#define COLLISION_AIAREA ECC_GameTraceChannel3
 
 #include "ArenaManager.h"
 #include "Components/BoxComponent.h"
@@ -41,6 +42,16 @@ AArenaManager::AArenaManager()
 	// Adjust size and mesh in blueprint.
 	MainPlatform = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MainPlatform"));
 	MainPlatform->SetupAttachment(GetRootComponent());
+
+	// Collision volume for Left/Right point's raycast to determine where Herders can walk.
+	HerderNavigatableArea = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RaycastDetector"));
+	HerderNavigatableArea->SetupAttachment(GetRootComponent());
+	HerderNavigatableArea->SetRelativeScale3D(FVector(10.0f, 14.0f, 3.0f));
+	HerderNavigatableArea->SetRelativeLocation(FVector(0.0f, 0.0f, -900.0f));
+	HerderNavigatableArea->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	HerderNavigatableArea->SetCollisionResponseToChannel(ECollisionChannel::COLLISION_AIAREA, ECollisionResponse::ECR_Block);
+	HerderNavigatableArea->bHiddenInGame = true;
+
 
 	// Assign default values
 	bLowerPlatforms = false;

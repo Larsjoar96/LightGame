@@ -552,10 +552,10 @@ void AMyPlayer::ReduceDistance()
 		// If you set the points to be visible in-game, you can see what I mean.
 		// If the points were supposed to be visible to the player, I would've figured out
 		// a more efficient, smoother solution.
-		LeftDistance -= 70.0f;
+		LeftDistance -= 40.0f;
 		LeftPoint->SetRelativeLocation(LeftForward * LeftDistance);
 		CheckLeftValid();
-		if (LeftDistance <= 80.0f) break;
+		if (LeftDistance <= 50.0f) break;
 	}
 
 	while (!bRightValid)
@@ -564,10 +564,10 @@ void AMyPlayer::ReduceDistance()
 		// If you set the points to be visible in-game, you can see what I mean.
 		// If the points were supposed to be visible to the player, I would've figured out
 		// a more efficient, smoother solution.
-		RightDistance -= 70.0f;
+		RightDistance -= 40.0f;
 		RightPoint->SetRelativeLocation(RightForward * RightDistance);
 		CheckRightValid();
-		if (RightDistance <= 80.0f) break;
+		if (RightDistance <= 50.0f) break;
 	}
 }
 
