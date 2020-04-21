@@ -595,13 +595,12 @@ void AMyPlayer::CheckRightValid()
 }
 
 
-// Function is called by 'AITimerHandle' to turn 'bPrioritizeReady' back to true
+// Function is called by 'AITimerHandle' to turn 'bPrioritizeReady' and 'bShouldFlicker' back to true.
+// Left and Right box colliders should flicker (teleport far away and back to its position in the span of 2 frames)
+// This is to be able to generate an OverlapEvent whenever AI is already inside one of the box colliders
+// when 'bPrioritizeReady' turns back to true. Just a solution to how Unreal detect OverlapEvents.
 void AMyPlayer::PrioritizationTrue()
 {
 	bPrioritizeReady = true;
-
-	// Left and Right box colliders should flicker (teleport far away and back to its position in the span of 2 frames)
-	// This is to be able to generate an OverlapEvent whenever AI is already inside one of the box colliders
-	// when 'bPrioritizeReady' turns back to true. Just a solution to how Unreal detect OverlapEvents.
 	bShouldFlicker = true;
 }

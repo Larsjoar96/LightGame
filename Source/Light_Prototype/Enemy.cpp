@@ -93,7 +93,7 @@ void AEnemy::Tick(float DeltaTime)
 	// VERY IMPORTANT: when the real materials are imported and used, change the material from inside the node in 'MEnemyDefault'. 
 	// Don't swap the whole material class itself. This is to still keep the blueprint functionalities within the material.
 	UMaterialInstanceDynamic* EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
-	if (EnemyMaterial && !bIsStunned)
+	if (EnemyMaterial /*&& !bIsStunned*/)
 	{
 		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}	

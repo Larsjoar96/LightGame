@@ -14,7 +14,7 @@ void AAnkelbiter::Tick(float DeltaTime)
 	// Temporarily fix for the additional material in Ankelbiters. In final game, all enemies will only have one
 	// material. So the function found in "Enemy.cpp" is enough
 	UMaterialInstanceDynamic* TempMaterial = Super::GetMesh()->CreateDynamicMaterialInstance(1);
-	if (TempMaterial && !bIsStunned)
+	if (TempMaterial /*&& !bIsStunned*/)
 	{
 		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}
