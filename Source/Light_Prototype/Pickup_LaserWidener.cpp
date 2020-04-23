@@ -23,11 +23,14 @@ void APickup_LaserWidener::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 {
 	Super::OnOverlapBegin(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	Player = Cast <AMyPlayer>(OtherActor);
-	Player->PickupEventBiggerLaser();
-	this->Destroy();
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		Player = Cast <AMyPlayer>(OtherActor);
+		Player->PickupEventBiggerLaser();
+		this->Destroy();
 
-	UE_LOG(LogTemp, Warning, TEXT("LaserWidener: OnOverlapBegin called"))
+		UE_LOG(LogTemp, Warning, TEXT("LaserWidener: OnOverlapBegin called"))
 
 		// Functionalities for 'FlashlightWidener' is implemented in the BluePrint
+	}
 }

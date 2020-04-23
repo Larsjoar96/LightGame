@@ -40,6 +40,7 @@ AEnemy::AEnemy()
 	HerderTopSpeed = 350.0f;
 	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
+	bPreSpawnedEnemy = false;
 
 }
 
@@ -57,8 +58,11 @@ void AEnemy::BeginPlay()
 
 	LaserDetector->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::LaserBeginOverlap);
 	LaserDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::LaserEndOverlap);
-
-	SpawnPoolLocation = GetActorLocation();
+	
+	if (bPreSpawnedEnemy == false)
+	{
+		SpawnPoolLocation = GetActorLocation();
+	}
 }
 
 // Called every frame
@@ -141,7 +145,6 @@ void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 			if (Player->bJustShot == false)//Check if player just fired a shot
 			{
 				bBeingStunned = true;
-
 			}
 
 		}
@@ -232,7 +235,15 @@ void AEnemy::Die()
 {
 	if (bIsStunned)
 	{
-		SetActorLocation(SpawnPoolLocation);
+		if (bPreSpawnedEnemy == false)
+		{
+			SetActorLocation(SpawnPoolLocation);
+			TimeInFlashlight = 0;
+		}
+		else
+		{
+			Destroy();
+		}
 	}
 }
 

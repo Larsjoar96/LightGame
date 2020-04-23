@@ -22,12 +22,14 @@ void APickup_FasterReload::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnOverlapBegin(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		Player = Cast <AMyPlayer>(OtherActor);
+		Player->PickupEventFasterReload();
+		this->Destroy();
 
-	Player = Cast <AMyPlayer>(OtherActor);
-	Player->PickupEventFasterReload();
-	this->Destroy();
-
-	UE_LOG(LogTemp, Warning, TEXT("Faster Reload: OnOverlapBegin called"))
+		UE_LOG(LogTemp, Warning, TEXT("Faster Reload: OnOverlapBegin called"))
 
 		// Functionalities for 'FlashlightWidener' is implemented in the BluePrint
+	}
 }

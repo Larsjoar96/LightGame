@@ -56,6 +56,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool bIsStunned;//Check if enemy is stunned 
 
+	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
+	UPROPERTY(EditAnywhere, Category = "MyVariables | PreSpawner")
+	bool bPreSpawnedEnemy;
+
 	UPROPERTY(EditAnywhere)
 	float TimeStunned;//How long the enemy should be stunned in seconds
 
