@@ -59,7 +59,7 @@ void APickup::Tick(float DeltaTime)
 	//Got help from this page: https://unrealcpp.com/rotating-actor/
 	FRotator NewRotation = FRotator(PitchValue, YawValue, RollValue);
 	FQuat QuatRotation = FQuat(NewRotation);
-	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+	AddActorWorldRotation(QuatRotation, false, 0, ETeleportType::None);
 
 }
 

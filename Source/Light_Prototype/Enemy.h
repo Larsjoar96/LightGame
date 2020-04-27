@@ -50,38 +50,38 @@ public:
 	UPROPERTY()
 	class ACharacter* CharacterCaster;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	bool bIsStunned;//Check if enemy is stunned 
 
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
 	UPROPERTY(EditAnywhere, Category = "MyVariables | PreSpawner")
 	bool bPreSpawnedEnemy;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float TimeStunned;//How long the enemy should be stunned in seconds
 
-	UPROPERTY(EditAnywhere)//How long it takes to stun enemy in seconds
+	UPROPERTY()//How long it takes to stun enemy in seconds
 	float TimeUntilStunned;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float TimeInFlashlight;//How long the enemy has been isnide flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float HerderTopSpeed;// Herder max walk speed
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float AnkelbiterTopSpeed;// Ankelbiter max walk speed
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float MoveAttackCollider;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float MovementSpeedReduction;//Decides how much speed enemy should lose by being inside flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FVector SpawnPoolLocation;//Location of where non-used enemies will be
 
 
