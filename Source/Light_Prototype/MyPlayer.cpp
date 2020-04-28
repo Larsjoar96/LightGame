@@ -27,7 +27,9 @@ AMyPlayer::AMyPlayer()
 	ParentOfPoints = CreateDefaultSubobject<USceneComponent>(TEXT("ParentOfPoints"));
 	ParentOfPoints->SetupAttachment(HerderAI);
 
-	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
+
+
+	FlashLightCollider = CreateDefaultSubobject <UStaticMeshComponent> (TEXT("FlashLightCollider"));
 	FlashLightPivot = CreateDefaultSubobject<USphereComponent>(TEXT("FlashLightColliderPivot"));
 
 	LaserCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserCollider"));
@@ -37,6 +39,12 @@ AMyPlayer::AMyPlayer()
 	LaserPivot = CreateDefaultSubobject<USphereComponent>(TEXT("LaserColliderPivot"));
 	LaserPivot->SetRelativeScale3D(FVector(.25f, .25f, .25f));
 	LaserPivot->SetRelativeLocation(FVector(40, 0.f, 0.f));
+
+	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Light"));
+	Flashlight->SetupAttachment(GetRootComponent());
+	Flashlight->SetIntensity(500000.0f);
+	Flashlight->SetAttenuationRadius(600.0f);
+	Flashlight->SetOuterConeAngle(40.0f);
 
 
 	// Colliders for Herder AI Behvaiour
@@ -96,10 +104,9 @@ AMyPlayer::AMyPlayer()
 
 	ColliderLocationOffset = 9000.0f;//Used for hiding flashlight cone and laser
 
-	//Initialize Flashlight collider Transforms
-	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
-	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
-	LightRotationDefault = this->GetActorRotation();
+
+
+
 
 	FlashLightScaleModifier = 1.1f;
 	LightReduceScaleMod = 1.01f;//Used to make the scale of the flashlight go down when you charge up laser
@@ -120,12 +127,13 @@ AMyPlayer::AMyPlayer()
 	PowerUpLightScale = 2.0f;
 	PowerUpLaserScale = 2.0f;
 
+
+	LightRotationDefault = this->GetActorRotation();
+
 	//Combat values
 	PlayerHealth = 5;
 	DamageTaken = 1;
 	ShootingTime = 0.03f;
-
-
 }
 
 // Called when the game starts or when spawned
@@ -134,12 +142,18 @@ void AMyPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	//Initialize Flashlight collider Transforms
+
+	//Initialize Flashlight collider Transforms
+	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
+	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
+;
+
 	LightLocationCurrent = LightLocationDefault;
 	LightScaleCurrent = LightScaleDefault;
 	LightRotationCurrent = LightRotationDefault;
 
 	LightLocationPoweredUp = LightLocationDefault;
-	LightScalePoweredUp = FVector(LightScaleDefault.X, LightScaleDefault.Y * PowerUpLightScale, LightScaleDefault.Z * PowerUpLightScale);
+	LightScalePoweredUp = FVector(LightScaleDefault.X * PowerUpLightScale, LightScaleDefault.Y * PowerUpLightScale, LightScaleDefault.Z * PowerUpLightScale);
 	LightRotationPoweredUp = LightRotationDefault;
 
 
@@ -149,7 +163,7 @@ void AMyPlayer::BeginPlay()
 	LaserRotationCurrent = LaserRotationDefault;
 
 	LaserLocationPoweredUp = LaserLocationDefault;
-	LaserScalePoweredUp = FVector(LaserScaleDefault.X, LaserScaleDefault.Y * PowerUpLaserScale, LaserScaleDefault.Z * PowerUpLaserScale);
+	LaserScalePoweredUp = FVector(LaserScaleDefault.X , LaserScaleDefault.Y * PowerUpLaserScale, LaserScaleDefault.Z * PowerUpLaserScale);
 	LaserRotationPoweredUp = LaserRotationDefault;
 
 	LaserPivot->SetRelativeLocation(LaserLocationDefault);
@@ -161,7 +175,7 @@ void AMyPlayer::BeginPlay()
 	// Because I set their location further down as 'SetRelativeLocation', they spawned at twice the
 	// rotation of GetActorRotation(). To fix this, I made the parent of these points half the rotation
 	// of GetActorRotation(). This will spawn them at the intended location.
-	float Yaw{ GetActorRotation().Yaw / 2};
+	float Yaw{GetActorRotation().Yaw / 2};
 	ParentOfPoints->SetWorldRotation(FRotator(0.0f, Yaw, 0.0f));
 
 	// Forward vectors of left/right point
@@ -189,6 +203,7 @@ void AMyPlayer::Tick(float DeltaTime)
 	Time = DeltaTime;
 
 	FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
+
 
 	LightBehaviour();
 	if (bHasPowerUp == true)
