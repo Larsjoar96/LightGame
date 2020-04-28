@@ -125,6 +125,7 @@ AMyPlayer::AMyPlayer()
 	DamageTaken = 1;
 	ShootingTime = 0.03f;
 
+	CurrentPowerUp = ECurrentPowerUp::ECP_None;
 
 }
 
@@ -295,6 +296,7 @@ void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
 	FlashLightPivot->SetRelativeScale3D(LightScaleCurrent);
 
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Green_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 
 }
@@ -304,6 +306,7 @@ void AMyPlayer::PickupEventFasterReload()//Increase fire rate of your finishing 
 	LosePowerup();
 	ReloadSpeedCurrent = ReloadSpeedUpgraded;
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Red_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 }
 
@@ -316,6 +319,7 @@ void AMyPlayer::PickupEventBiggerLaser()//Increase the size of the finishing mov
 	LaserPivot->SetRelativeScale3D(LaserScaleCurrent);
 
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Blue_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 }
 
@@ -339,6 +343,7 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 	ReloadSpeedCurrent = ReloadSpeedDefault;
 
 	bHasPowerUp = false;
+	CurrentPowerUp = ECurrentPowerUp::ECP_None;
 
 }
 

@@ -7,6 +7,19 @@
 #include "Components/BoxComponent.h"
 #include "MyPlayer.generated.h"
 
+
+UENUM(BlueprintType)
+enum class ECurrentPowerUp : uint8
+{
+	ECP_None 		    UMETA(Displayname = "None"),
+	ECP_Red_PowerUp		UMETA(Displayname = "Red_PowerUp"),
+	ECP_Green_PowerUp	UMETA(Displayname = "Green_PowerUp"),
+	ECP_Blue_PowerUp	UMETA(Displayname = "Blue_PowerUp"),
+
+	ECP_Max		        UMETA(Displayname = "DefaultMax")
+};
+
+
 UCLASS()
 class LIGHT_PROTOTYPE_API AMyPlayer : public ACharacter
 {
@@ -27,6 +40,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PowerUp")
+	ECurrentPowerUp CurrentPowerUp;
 
 	// Behind/Left/Right/Mid colliders are used for the behvaiour of Herder enemies
 	UPROPERTY(EditAnywhere, Category = "AI")
