@@ -43,6 +43,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PowerUp")
 	ECurrentPowerUp CurrentPowerUp;
 
+	UPROPERTY(BlueprintReadWrite)
+	FVector LastCheckpoint;
+
 	// Behind/Left/Right/Mid colliders are used for the behvaiour of Herder enemies
 	UPROPERTY(EditAnywhere, Category = "AI")
 	class USceneComponent* HerderAI; // Only used for sorting the components in the hierarchy
@@ -68,7 +71,6 @@ public:
 	float LeftDistance;
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float RightDistance;
-
 
 	// Vectors used by Herder AI as destinations for Stage One
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
@@ -104,13 +106,12 @@ public:
 	class USphereComponent* LaserPivot;
 
 	//UPROPERTY(EditAnywhere, Category = "Mesh")
-		//class USkeletalMeshComponent* PlayerMesh;
+	//class USkeletalMeshComponent* PlayerMesh;
 
 	FTimerHandle MyTimerHandle;
 
 	// TimerHandle for Herder AI Behaviour
 	FTimerHandle AITimerHandle;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	bool bIsCharging;
@@ -148,7 +149,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
 	float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
 
-		//Values for charging up your finishingmove
+	//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	float LightReduceScaleMod;//Helps make the flashlight scale down
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
@@ -160,13 +161,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	float ColliderLocationOffset;//When your finishing move is fully charged
 
-		//Values for damage invincibility after taking damage
+	//Values for damage invincibility after taking damage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
 	float TimeRecovering;//How long you have been in "recovery state"
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
 	float TimeToRecover;//How long it will take you to lose invincibility from taking damage
 
-		//Transforms for the light cone
+	//Transforms for the light cone
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
 	FVector LightLocationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
@@ -218,6 +219,8 @@ public:
 	void CooledDown();
 	void StopCharging();
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnAtLastCheckpoint();
 
 	// Functions for Left/Right points (connected to Herder AI behaviour)
 	void ReduceDistance();

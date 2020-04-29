@@ -41,6 +41,7 @@ AEnemy::AEnemy()
 	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
 	bPreSpawnedEnemy = false;
+	bDead = true;
 
 }
 
@@ -219,16 +220,18 @@ void AEnemy::Stunning()
 void AEnemy::Rally()
 {
 	bIsStunned = false;
-
-	if (Cast<AHerder>(this))
+	if (!bDead)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+		if (Cast<AHerder>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+		}
+		else if (Cast<AAnkelbiter>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
+		}
+		//Function for material change needed
 	}
-	else if (Cast<AAnkelbiter>(this))
-	{
-		GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
-	}
-	//Function for material change needed
 }
 
 void AEnemy::Die()
@@ -237,7 +240,9 @@ void AEnemy::Die()
 	{
 		if (bPreSpawnedEnemy == false)
 		{
+			bDead = true;
 			SetActorLocation(SpawnPoolLocation);
+			GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 			TimeInFlashlight = 0;
 		}
 		else

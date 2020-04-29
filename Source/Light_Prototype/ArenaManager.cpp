@@ -8,6 +8,8 @@
 #include "EnemySpawner.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SceneComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "MyPlayer.h"
 
 // Sets default values
 AArenaManager::AArenaManager()
@@ -53,15 +55,17 @@ AArenaManager::AArenaManager()
 	HerderNavigatableArea->bHiddenInGame = true;
 
 
-	// Assign default values
+	// Assign default values for the encounter
+	bEncounterComplete = false;
+	bEncounterStarted = false;
 	bLowerPlatforms = false;
 	bRaisePlatforms = false;
 	CalculatedEnter = 0.0f;
 	CalculatedExit = 0.0f;
-	bEncounterComplete = 0;
 	AmountOfSpawners = 0;
 	EnterAltitude = 3.0f;
 	ExitAltitude = 3.0f;
+	bJustReset = false;
 	TimePassed = 0.0f;
 	EnemiesLeft = 0;
 }
@@ -70,7 +74,9 @@ AArenaManager::AArenaManager()
 void AArenaManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	PlayerRef = Cast<AMyPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
 	for (int32 i{ 0 }; i < AmountOfSpawners; i++)
 	{
 		// This will most likely cause a crash though
@@ -89,7 +95,16 @@ void AArenaManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// QUESTION: is it expensive to check a bool every frame? like I do here?
+	// If player died and encounter started, but did not complete it
+	if ((PlayerRef->PlayerHealth <= 0 && bEncounterStarted == true && bEncounterComplete == false) && (bJustReset == false))
+	{
+		bJustReset = true;
+		ResetEncounter();
+	}
+	else
+	{
+		bJustReset = false;
+	}
 
 	if (bLowerPlatforms == true)
 	{
@@ -128,7 +143,7 @@ void AArenaManager::DecrementEnemies()
 	EnemiesLeft--;
 	UE_LOG(LogTemp, Warning, TEXT("Enemies Left: %i"), EnemiesLeft)
 
-	if (EnemiesLeft <= 0)
+	if (EnemiesLeft <= 0 && bEncounterStarted)
 	{
 		int32 Counter{0};
 
@@ -142,12 +157,15 @@ void AArenaManager::DecrementEnemies()
 		}
 
 		// If all of the spawners had an empty wave (no one to spawn), then consider encounter complete.
-		if (Counter == AmountOfSpawners)
+		if ((Counter == AmountOfSpawners && !bEncounterComplete) && bEncounterStarted)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("COMPLETE"))
+			UE_LOG(LogTemp, Warning, TEXT("Encounter COMPLETE"))
+			PlayerRef->LastCheckpoint = MainPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, 600.0f);
 			TimePassed = 0.0f;
+			bEncounterComplete = true;
 			bRaisePlatforms = true;
 			bLowerPlatforms = false; // Make it possible to exit encounter area
+			EnterArenaCollider->DestroyComponent();
 		}
 	}
 
@@ -156,19 +174,37 @@ void AArenaManager::DecrementEnemies()
 void AArenaManager::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Starting encounter ..."))
+	if (bEncounterStarted == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Starting encounter ..."))
 
-	// Start spawning enemies
+		// Start spawning enemies
+		for (int32 i{ 0 }; i < AmountOfSpawners; i++)
+		{
+			EnemySpawners[i]->SpawnNextWave();
+		}
+
+		// Force player to fight enemies by lowering platforms
+		TimePassed = 0.0f;
+		bRaisePlatforms = false;
+		bLowerPlatforms = true;
+		bEncounterStarted = true;
+	}
+}
+
+void AArenaManager::ResetEncounter()
+{
+	bEncounterStarted = false;
+	bEncounterComplete = false;
+	bEncounterStarted = false;
+	bLowerPlatforms = false;
+	bRaisePlatforms = true;
+
 	for (int32 i{ 0 }; i < AmountOfSpawners; i++)
 	{
-		EnemySpawners[i]->SpawnNextWave();
+		EnemySpawners[i]->ResetWaves();
 	}
 
-	// Force player to fight enemies by lowering platforms
 	TimePassed = 0.0f;
-	bRaisePlatforms = false;
-	bLowerPlatforms = true;
-
-	// After only one detection, the collider will destroy itself
-	EnterArenaCollider->DestroyComponent();
+	EnemiesLeft = 0;
 }

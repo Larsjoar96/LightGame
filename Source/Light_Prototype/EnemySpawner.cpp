@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "EngineUtils.h"
+#include "Herder.h"
+#include "Ankelbiter.h"
 
 // Sets default values
 AEnemySpawner::AEnemySpawner()
@@ -33,7 +35,6 @@ AEnemySpawner::AEnemySpawner()
 	AmountOfWaves = sizeof(Waves) / sizeof(Waves[0]);
 
 	// Assignes all elements of 'Waves' with the value 0.
-	// (IMPORTANT: for-loop does not update dynamically to the size of array... will be fixed)
 	for (int32 i{ 0 }; i < AmountOfWaves; i++)
 	{
 		Waves[i] = 0;
@@ -170,10 +171,13 @@ void AEnemySpawner::SpawnEnemies()
 			// of where they will spawn, based on the location of this spawner's x- and y-values.
 			SpawnedEnemy->SetActorLocation(StartPoint->GetComponentLocation() + FVector(0.0f, 0.0f, -150.0f));
 			SpawnedEnemy->SetActorRotation(this->GetActorRotation());
+			
+			// Enables movement for spawned enemy (movement will be disabled while enemy is located in spawn pool)
+			SpawnedEnemy->bDead = false;
 
 			// Assign random values for both variables
 			RandomSpawnDelay *= UKismetMathLibrary::RandomFloat(); // Will normalize the 'RandomSpawnDelay' randomly
-			RandomLaunchForce = UKismetMathLibrary::RandomFloatInRange(0.9f, 1.05f);
+			RandomLaunchForce = UKismetMathLibrary::RandomFloatInRange(0.95f, 1.05f);
 
 			// 'LaunchVector' is calculated (through trial and error) to launch in the correct direction with the correct force
 			UCharacterMovementComponent* EnemyMovementComponent;
@@ -191,4 +195,19 @@ void AEnemySpawner::SpawnEnemies()
 		}
 	}
 
+}
+
+void AEnemySpawner::ResetWaves()
+{
+	CurrentWave = 0;
+	
+	// Teleport/reset enemies by killing them
+	for (int32 i{ 0 }; i < Enemies.Num(); i++)
+	{
+		if (Enemies[i]->bPreSpawnedEnemy == false)
+		{
+			Enemies[i]->bIsStunned = true;
+			Enemies[i]->Die();
+		}
+	}
 }

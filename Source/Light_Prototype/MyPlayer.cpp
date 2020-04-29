@@ -134,6 +134,9 @@ void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Set first checkpoint as the location at the start of the game
+	LastCheckpoint = GetActorLocation();
+
 	//Initialize Flashlight collider Transforms
 	LightLocationCurrent = LightLocationDefault;
 	LightScaleCurrent = LightScaleDefault;
@@ -188,6 +191,8 @@ void AMyPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Time = DeltaTime;
+
+	if (PlayerHealth <= 0) SpawnAtLastCheckpoint();
 
 	FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 
@@ -268,12 +273,9 @@ void AMyPlayer::ChargeUp()//Hold button to charge
 void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
 	if (bJustShot == false)
-		UE_LOG(LogTemp, Warning, TEXT("Shoot!"));
 	{
 		if (LaserCharger >= LaserFullyCharged)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PEW!"));
-
 			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
 
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
@@ -608,4 +610,12 @@ void AMyPlayer::PrioritizationTrue()
 {
 	bPrioritizeReady = true;
 	bShouldFlicker = true;
+}
+
+void AMyPlayer::SpawnAtLastCheckpoint()
+{
+	UE_LOG(LogTemp, Warning, (TEXT("Respawning...")))
+	LosePowerup();
+	SetActorLocation(LastCheckpoint);
+	PlayerHealth = 5;
 }
