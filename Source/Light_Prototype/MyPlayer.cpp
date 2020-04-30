@@ -125,7 +125,7 @@ AMyPlayer::AMyPlayer()
 	ReloadSpeedCurrent = 2.0f;
 	ReloadSpeedUpgraded = 4.0f;
 	PowerUpLightScale = 2.0f;
-	PowerUpLaserScale = 2.0f;
+	PowerUpLaserScale = 4.0f;
 
 
 	LightRotationDefault = this->GetActorRotation();
