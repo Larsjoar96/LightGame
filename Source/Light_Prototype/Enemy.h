@@ -53,7 +53,7 @@ public:
 	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsStunned;//Check if enemy is stunned 
 
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
@@ -69,10 +69,10 @@ public:
 	UPROPERTY()
 	float TimeInFlashlight;//How long the enemy has been isnide flashlight
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	float HerderTopSpeed;// Herder max walk speed
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	float AnkelbiterTopSpeed;// Ankelbiter max walk speed
 
 	UPROPERTY()
