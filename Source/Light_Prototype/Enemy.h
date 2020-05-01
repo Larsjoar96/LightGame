@@ -142,6 +142,4 @@ public:
 	void Die();
 
 
-
-
 };
