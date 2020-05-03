@@ -137,7 +137,7 @@ void AEnemy::ArenaEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->IsA<UBoxComponent>())
+	if (OtherComp->IsA<UStaticMeshComponent>())
 	{
 		if (OtherComp->ComponentHasTag("Flashlight"))//Is it overlapping with flashlight?
 		{
@@ -155,7 +155,7 @@ void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 void AEnemy::FlashLightEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherComp->IsA<UBoxComponent>())
+	if (OtherComp->IsA<UStaticMeshComponent>())
 	{
 		if (OtherComp->ComponentHasTag("Flashlight"))//Was it the flashlight that stopped overlapping ?
 		{

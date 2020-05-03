@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "MyPlayer.generated.h"
 
 
@@ -91,12 +92,12 @@ public:
 	FHitResult* HitResult;
 	FCollisionQueryParams* TraceParams;
 
-
+	//Making DeltaTime Global
 	UPROPERTY()
 	float Time;
 
-	UPROPERTY(EditAnywhere, Category = "Collider")
-	class UBoxComponent* FlashLightCollider;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UStaticMeshComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* FlashLightPivot;
 
@@ -104,6 +105,9 @@ public:
 	class UBoxComponent* LaserCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* LaserPivot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Light")
+	class USpotLightComponent* Flashlight;
 
 	//UPROPERTY(EditAnywhere, Category = "Mesh")
 	//class USkeletalMeshComponent* PlayerMesh;
