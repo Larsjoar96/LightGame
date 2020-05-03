@@ -44,11 +44,20 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* LaserDetector;
 
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* AttackRange;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* StartAttackingRange;
+
 	UPROPERTY()
 	class AMyPlayer* Player;
 
 	UPROPERTY()
 	class ACharacter* CharacterCaster;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
+	class UAnimMontage* AttackMontage;
 
 	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
@@ -56,7 +65,14 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsStunned;//Check if enemy is stunned 
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bRotateTowardsPlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Anims")
+	bool bAttacking;
+
 	bool bDead;
+	bool bWithinAttackRange;
 
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
 	UPROPERTY(EditAnywhere, Category = "MyVariables | PreSpawner")
@@ -78,7 +94,7 @@ public:
 	float AnkelbiterTopSpeed;// Ankelbiter max walk speed
 
 	UPROPERTY()
-	float MoveAttackCollider;
+	float MoveAttackRange;
 
 	UPROPERTY()
 	float MovementSpeedReduction;//Decides how much speed enemy should lose by being inside flashlight
@@ -86,7 +102,9 @@ public:
 	UPROPERTY()
 	FVector SpawnPoolLocation;//Location of where non-used enemies will be
 
-
+	// This is a struct!
+	// Timer handle for "teleport back to spawn pool" delay
+	FTimerHandle DeathTimer;
 
 
 protected:
@@ -99,6 +117,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Teleport enemy to spawn poll when dead
+	void TpEnemyToPool();
 
 	UFUNCTION()
 	void ArenaBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -121,16 +142,12 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void LaserEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UFUNCTION()
-	void AttackRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
 	void AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void StartAttackingRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void Stunning();
@@ -141,5 +158,13 @@ public:
 	UFUNCTION()
 	void Die();
 
+	UFUNCTION(BlueprintCallable)
+	void Attack();
+
+	UFUNCTION(BlueprintCallable)
+	void EndAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void DamagePlayer();
 
 };

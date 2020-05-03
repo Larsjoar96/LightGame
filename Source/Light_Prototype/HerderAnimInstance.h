@@ -26,7 +26,10 @@ public:
 	bool bisInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool bEnemyDead;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	class APawn* Pawn;
 
-
+	class AEnemy* EnemyPtr;
 };

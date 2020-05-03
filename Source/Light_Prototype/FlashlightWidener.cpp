@@ -14,7 +14,7 @@ void AFlashlightWidener::BeginPlay()
 	Super::BeginPlay();
 
 	// Start checking for OverlapBegin events
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
+	Collider->OnComponentBeginOverlap.AddDynamic(this, &AFlashlightWidener::OnOverlapBegin);
 }
 
 

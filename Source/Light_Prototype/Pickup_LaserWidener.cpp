@@ -14,7 +14,7 @@ void APickup_LaserWidener::BeginPlay()
 	Super::BeginPlay();
 
 	// Start checking for OverlapBegin events
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
+	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup_LaserWidener::OnOverlapBegin);
 }
 
 

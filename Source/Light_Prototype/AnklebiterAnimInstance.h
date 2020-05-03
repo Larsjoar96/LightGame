@@ -19,14 +19,17 @@ public:
 	virtual void NativeInitializeAnimation() override;
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateAnimationProperties();
+	void UpdateAnimationProperties();
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bisInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool bEnemyDead;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	class APawn* Pawn;
 
-
+	class AEnemy* EnemyPtr;
 };

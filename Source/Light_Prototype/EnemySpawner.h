@@ -45,6 +45,7 @@ public:
 	// Array filled up with instances to spawn
 	TArray<AEnemy*> Enemies;
 
+	// This is a struct, not a class
 	// TimerHandle to track time processes
 	FTimerHandle MyTimerHandle;
 

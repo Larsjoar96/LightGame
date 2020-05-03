@@ -14,7 +14,7 @@ void APickup_FasterReload::BeginPlay()
 	Super::BeginPlay();
 
 	// Start checking for OverlapBegin events
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
+	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup_FasterReload::OnOverlapBegin);
 }
 
 
@@ -22,6 +22,7 @@ void APickup_FasterReload::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnOverlapBegin(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		
 	if (Cast<AMyPlayer>(OtherActor))
 	{
 		Player = Cast <AMyPlayer>(OtherActor);

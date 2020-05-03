@@ -4,6 +4,7 @@
 #include "Ankelbiter.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 void AAnkelbiter::Tick(float DeltaTime)
@@ -18,4 +19,6 @@ void AAnkelbiter::Tick(float DeltaTime)
 	{
 		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}
+
+	GetCharacterMovement()->bOrientRotationToMovement = (bRotateTowardsPlayer) ? true : false;
 }

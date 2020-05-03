@@ -12,6 +12,9 @@
 #include "Ankelbiter.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/Character.h"
+#include "TimerManager.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -31,6 +34,20 @@ AEnemy::AEnemy()
 	LaserDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserDetector"));
 	LaserDetector->SetupAttachment(GetRootComponent());
 
+	// Create component for Attack Range Collider
+	// Attributes will be different for each enemy, so box extent etc. will be modified in BP
+	AttackRange = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackRange"));
+	AttackRange->SetupAttachment(GetRootComponent());
+	AttackRange->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	AttackRange->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	// Create component for Start Attacking Range Collider
+	// Attributes will be different for each enemy, so box extent etc. will be modified in BP
+	StartAttackingRange = CreateDefaultSubobject<UBoxComponent>(TEXT("StartAttackingRange"));
+	StartAttackingRange->SetupAttachment(GetRootComponent());
+	StartAttackingRange->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	StartAttackingRange->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
 	// Default 'none' value, as a safety if you forgot to assign it in the editor
 	EnemyLabel = EEnemyLabel::ESL_None;
 
@@ -40,7 +57,10 @@ AEnemy::AEnemy()
 	HerderTopSpeed = 350.0f;
 	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
+	bRotateTowardsPlayer = true;
 	bPreSpawnedEnemy = false;
+	bWithinAttackRange = false;
+	bAttacking = false;
 	bDead = true;
 
 }
@@ -58,8 +78,11 @@ void AEnemy::BeginPlay()
 	FlashlightDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::FlashLightEndOverlap);
 
 	LaserDetector->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::LaserBeginOverlap);
-	LaserDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::LaserEndOverlap);
 	
+	AttackRange->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackRangeEndOverlap);
+
+	StartAttackingRange->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::StartAttackingRangeBeginOverlap);
+
 	if (bPreSpawnedEnemy == false)
 	{
 		SpawnPoolLocation = GetActorLocation();
@@ -103,6 +126,8 @@ void AEnemy::Tick(float DeltaTime)
 		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}	
 
+	// If enemy is attacking, the enemy should not be able to move
+	if (bAttacking) GetCharacterMovement()->MaxWalkSpeed = 0;
 }
 
 // Called to bind functionality to input
@@ -177,21 +202,27 @@ void AEnemy::LaserBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	}
 }
 
-void AEnemy::LaserEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
 
-}
-
-void AEnemy::AttackRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-}
 void AEnemy::AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinAttackRange = false;
+	}
+}
 
+void AEnemy::StartAttackingRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinAttackRange = true;
+		if (!bIsStunned)
+		{
+			Attack();
+		}
+	}
 }
 
 
@@ -201,7 +232,6 @@ void AEnemy::Stunning()
 	{
 		bIsStunned = true;
 		GetCharacterMovement()->MaxWalkSpeed = 0;
-		//Function for material change needed
 	}
 	else if (!bIsStunned)
 	{
@@ -213,7 +243,6 @@ void AEnemy::Stunning()
 		{
 			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed - (TimeInFlashlight * MovementSpeedReduction);
 		}
-		//Function for material change needed
 	}
 }
 
@@ -230,7 +259,6 @@ void AEnemy::Rally()
 		{
 			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
 		}
-		//Function for material change needed
 	}
 }
 
@@ -241,9 +269,9 @@ void AEnemy::Die()
 		if (bPreSpawnedEnemy == false)
 		{
 			bDead = true;
-			SetActorLocation(SpawnPoolLocation);
+			bRotateTowardsPlayer = false;
+			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::TpEnemyToPool, 0.930f);
 			GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-			TimeInFlashlight = 0;
 		}
 		else
 		{
@@ -252,3 +280,41 @@ void AEnemy::Die()
 	}
 }
 
+void AEnemy::TpEnemyToPool()
+{
+	SetActorLocation(SpawnPoolLocation);
+	TimeInFlashlight = 0;
+	bRotateTowardsPlayer = true;
+}
+
+void AEnemy::Attack()
+{
+	bAttacking = true;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(FName("Attack_1"), AttackMontage);
+	}
+}
+
+void AEnemy::EndAttack()
+{
+	bAttacking = false;
+
+	// If still within attack range when attack ends, continue attacking
+	if (bWithinAttackRange)
+	{
+		Attack();
+	}
+}
+
+void AEnemy::DamagePlayer()
+{
+	if (bWithinAttackRange)
+	{
+		AMyPlayer* PlayerRef = Cast<AMyPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		PlayerRef->PlayerHealth -= 1;
+	}
+}

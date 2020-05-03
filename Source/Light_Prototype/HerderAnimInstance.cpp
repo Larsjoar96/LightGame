@@ -3,6 +3,7 @@
 
 #include "HerderAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Enemy.h"
 
 void UHerderAnimInstance::NativeInitializeAnimation()
 {
@@ -22,5 +23,12 @@ void UHerderAnimInstance::UpdateAnimationProperties()
 	if(Pawn)
 	{
 		bisInAir = Pawn->GetMovementComponent()->IsFalling();
+		
+		EnemyPtr = Cast<AEnemy>(Pawn);
+
+		if (EnemyPtr->IsA<AEnemy>())
+		{
+			bEnemyDead = EnemyPtr->bDead;
+		}
 	}
 }
