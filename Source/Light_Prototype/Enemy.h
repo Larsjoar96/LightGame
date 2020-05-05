@@ -59,6 +59,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
 	class UAnimMontage* AttackMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> FlashlightWidener;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> FasterReload;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> LazerWidener;
+
 	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
 
@@ -166,5 +175,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DamagePlayer();
+
+	UFUNCTION()
+	void SpawnPowerUp(int32 PowerUpIndex);
 
 };

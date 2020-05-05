@@ -46,8 +46,7 @@ void APickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Start checking for OverlapBegin events
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
+
 }
 
 // Called every frame
