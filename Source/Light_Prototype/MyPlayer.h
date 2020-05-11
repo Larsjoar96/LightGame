@@ -109,9 +109,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Light")
 	class USpotLightComponent* Flashlight;
 
-	//UPROPERTY(EditAnywhere, Category = "Mesh")
-	//class USkeletalMeshComponent* PlayerMesh;
-
 	FTimerHandle MyTimerHandle;
 
 	// TimerHandle for Herder AI Behaviour

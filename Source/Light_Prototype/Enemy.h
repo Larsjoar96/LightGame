@@ -50,6 +50,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* StartAttackingRange;
 
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class USphereComponent* PlayerDetector;
+
 	UPROPERTY()
 	class AMyPlayer* Player;
 
@@ -67,6 +70,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Pickups")
 	TSubclassOf<class APickup> LazerWidener;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> Health;
 
 	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
@@ -86,6 +92,9 @@ public:
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
 	UPROPERTY(EditAnywhere, Category = "MyVariables | PreSpawner")
 	bool bPreSpawnedEnemy;
+
+	// Used for pre spawned enemies. They will only move towards palyer if within range.
+	bool bWithinRangeOfPlayer;
 
 	UPROPERTY()
 	float TimeStunned;//How long the enemy should be stunned in seconds
@@ -159,6 +168,14 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
+	void PlayerDetectorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void PlayerDetectorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
 	void Stunning();
 
 	UFUNCTION()
@@ -178,5 +195,11 @@ public:
 
 	UFUNCTION()
 	void SpawnPowerUp(int32 PowerUpIndex);
+
+	UFUNCTION()
+	void SpawnHealth();
+
+	UFUNCTION()
+	void DestroyEnemy();
 
 };
