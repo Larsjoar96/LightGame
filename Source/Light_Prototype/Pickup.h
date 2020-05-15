@@ -21,6 +21,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Collider")
 	class UBoxComponent* Collider;
 
+	UPROPERTY(EditAnywhere, Category = "Particles")
+	class UParticleSystem* ParticleOnPickup;
+
+	UPROPERTY(EditAnywhere, Category = "Light")
+	class UPointLightComponent* LightSource;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

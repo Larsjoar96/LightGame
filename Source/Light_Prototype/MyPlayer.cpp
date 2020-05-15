@@ -27,8 +27,6 @@ AMyPlayer::AMyPlayer()
 	ParentOfPoints = CreateDefaultSubobject<USceneComponent>(TEXT("ParentOfPoints"));
 	ParentOfPoints->SetupAttachment(HerderAI);
 
-
-
 	FlashLightCollider = CreateDefaultSubobject <UStaticMeshComponent> (TEXT("FlashLightCollider"));
 	FlashLightPivot = CreateDefaultSubobject<USphereComponent>(TEXT("FlashLightColliderPivot"));
 
@@ -45,7 +43,6 @@ AMyPlayer::AMyPlayer()
 	Flashlight->SetIntensity(500000.0f);
 	Flashlight->SetAttenuationRadius(600.0f);
 	Flashlight->SetOuterConeAngle(40.0f);
-
 
 	// Colliders for Herder AI Behvaiour
 	BehindCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BehindCollider"));
@@ -94,8 +91,6 @@ AMyPlayer::AMyPlayer()
 	bPrioritizeReady = true;
 	bShouldFlicker = false;
 	bJustFlicked = false;
-
-	//PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
 
 	FlashLightCollider->SetupAttachment(FlashLightPivot);
 	LaserCollider->SetupAttachment(LaserPivot);
