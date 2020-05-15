@@ -149,6 +149,8 @@ public:
 	float PowerUpLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
 	float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
+	float YScaler;//Extra scaler for y-direction to make fit for lighting
 
 	//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")

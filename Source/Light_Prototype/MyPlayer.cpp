@@ -117,6 +117,7 @@ AMyPlayer::AMyPlayer()
 	ReloadSpeedUpgraded = 4.0f;
 	PowerUpLightScale = 2.0f;
 	PowerUpLaserScale = 4.0f;
+	YScaler = 4.2f;
 
 	LightRotationDefault = this->GetActorRotation();
 
@@ -148,7 +149,7 @@ void AMyPlayer::BeginPlay()
 	LightRotationCurrent = LightRotationDefault;
 
 	LightLocationPoweredUp = LightLocationDefault;
-	LightScalePoweredUp = FVector(LightScaleDefault.X * PowerUpLightScale, LightScaleDefault.Y * PowerUpLightScale, LightScaleDefault.Z * PowerUpLightScale);
+	LightScalePoweredUp = FVector(LightScaleDefault.X * PowerUpLightScale, LightScaleDefault.Y * PowerUpLightScale * YScaler, LightScaleDefault.Z * PowerUpLightScale);
 	LightRotationPoweredUp = LightRotationDefault;
 
 
