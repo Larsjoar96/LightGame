@@ -155,7 +155,7 @@ public:
 
 	//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-	float LightReduceScaleMod;//Helps make the flashlight scale down
+	float LightReduceScaleMod;//Helps make the flashlight scale down while charing the laser
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	float LightReturnSpeed;//Affects how fast your light returns if you let go before fully charged
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")

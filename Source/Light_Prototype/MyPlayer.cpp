@@ -115,7 +115,7 @@ AMyPlayer::AMyPlayer()
 	LaserRotationDefault = this->GetActorRotation();
 
 	//Initialize PowerUp Variables
-	PowerUpTime = 45.0f;
+	PowerUpTime = 20.0f;
 	PowerUpTimeLeft = 0;
 	ReloadSpeedDefault = 2.0f;
 	ReloadSpeedCurrent = 2.0f;
