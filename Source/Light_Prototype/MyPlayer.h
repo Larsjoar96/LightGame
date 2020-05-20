@@ -210,6 +210,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserTransforms")
 	FRotator LaserRotationPoweredUp;
 
+	UPROPERTY(EditAnywhere, Category = "Light")
+	TSubclassOf<class ALaserBeamVisual> LaserVisual;
+
 	void PickupEventBiggerFlashlight();
 	void PickupEventBiggerLaser();
 	void PickupEventFasterReload();

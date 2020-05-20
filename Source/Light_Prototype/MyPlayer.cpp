@@ -11,6 +11,8 @@
 #include "Math/TransformNonVectorized.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "TimerManager.h"
+#include "Engine/World.h"
+#include "LaserBeamVisual.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -142,7 +144,7 @@ void AMyPlayer::BeginPlay()
 	//Initialize Flashlight collider Transforms
 	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
 	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
-;
+
 
 	LightLocationCurrent = LightLocationDefault;
 	LightScaleCurrent = LightScaleDefault;
@@ -284,6 +286,20 @@ void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 		if (LaserCharger >= LaserFullyCharged)
 		{
 			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
+
+			if (LaserVisual)
+			{
+				FActorSpawnParameters SpawnParams;
+				FVector Location = GetActorLocation();
+				FRotator Rotation = GetActorRotation();
+
+				// Spawn laser mesh for feedback to player
+				ALaserBeamVisual* VisualRef = GetWorld()->SpawnActor<ALaserBeamVisual>(LaserVisual, Location, Rotation, SpawnParams);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Missing 'LaserVisual' from MyPlayer_BP ..."))
+			}
 
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
 		}
