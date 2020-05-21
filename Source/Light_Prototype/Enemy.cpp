@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "Math/UnrealMathUtility.h"
 #include "Animation/AnimInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Pickup_LaserWidener.h"
@@ -67,15 +68,19 @@ AEnemy::AEnemy()
 	EnemyLabel = EEnemyLabel::ESL_None;
 
 	TimeStunned = 3;
+	TimePassed = 0.0f;
 	TimeUntilStunned = 2;
 	TimeInFlashlight = 0;
+	AmountOfMaterials = 2;
 	HerderTopSpeed = 350.0f;
+	TimerForTpEnemy = 0.930f;
 	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
 	bWithinRangeOfPlayer = true;
 	bRotateTowardsPlayer = true;
 	bWithinAttackRange = false;
 	bPreSpawnedEnemy = false;
+	bDissolveEnemy = false;
 	bAttacking = false;
 	bDead = true;
 
@@ -140,14 +145,31 @@ void AEnemy::Tick(float DeltaTime)
 		}
 	}
 
-	// Adding gradient effect to material for feedback to player, regarding weakening progression.
+	// FOR DISSOLVE DEBUGGING
+	//UE_LOG(LogTemp, Warning, TEXT("Dissolve = %d"), bDissolveEnemy)
+
+	// Adding gradient effect to material for feedback to player, regarding weakening progression. Also for the dissolve effect.
 	// VERY IMPORTANT: when the real materials are imported and used, change the material from inside the node in 'MEnemyDefault'. 
 	// Don't swap the whole material class itself. This is to still keep the blueprint functionalities within the material.
-	UMaterialInstanceDynamic* EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
-	if (EnemyMaterial /*&& !bIsStunned*/)
+	for (int32 i{ 0 }; i < AmountOfMaterials; i++) 
 	{
-		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
-	}	
+		if ((GetMesh()->GetNumMaterials() - 1) >= i)
+		{
+			EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(i);
+
+			// Weakening gradient effect and dissolve effect
+			EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
+			if (bDissolveEnemy)
+			{
+				EnemyMaterial->SetScalarParameterValue(FName("DissolveAmount"), AmountToDissolve(TimePassed * (1 / TimerForTpEnemy)));
+				TimePassed += DeltaTime;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
 
 	// If enemy is attacking, the enemy should not be able to move
 	// Or if a pre spawned enemy is not within range of player
@@ -323,17 +345,18 @@ void AEnemy::Die()
 		SpawnPowerUp(PowerUpIndex);
 
 		bDead = true;
+		bDissolveEnemy = true;
 		bRotateTowardsPlayer = false;
 		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 
 		// If enemy is pre spawned, then destroy it. Else, teleport it back to spawn pool
 		if (bPreSpawnedEnemy)
 		{
-			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::DestroyEnemy, 0.930f);
+			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::DestroyEnemy, TimerForTpEnemy);
 		}
 		else
 		{
-			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::TpEnemyToPool, 0.930f);
+			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::TpEnemyToPool, TimerForTpEnemy);
 		}
 	}
 }
@@ -341,8 +364,24 @@ void AEnemy::Die()
 void AEnemy::TpEnemyToPool()
 {
 	SetActorLocation(SpawnPoolLocation);
+	bDissolveEnemy = false;
 	TimeInFlashlight = 0;
 	bRotateTowardsPlayer = true;
+	TimePassed = 0.0f;
+
+	// Reset dissolve effect back to normal
+	for (int32 i{ 0 }; i < AmountOfMaterials; i++)
+	{
+		if ((GetMesh()->GetNumMaterials() - 1) >= i)
+		{
+			EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(i);
+			EnemyMaterial->SetScalarParameterValue(FName("DissolveAmount"), AmountToDissolve(0.0f));
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
 void AEnemy::Attack()
@@ -457,4 +496,13 @@ void AEnemy::SpawnHealth()
 void AEnemy::DestroyEnemy()
 {
 	this->Destroy();
+}
+
+// Since the 'DissolveAmount' in enemy's material has inputs as (-5.0f = no dissolve) and (8.0f = fully dissolved),
+// I created this function to normalize these values. So (0.0f = no dissolve) and (1.0f = fully dissolved).
+float AEnemy::AmountToDissolve(float Amount)
+{
+	if (Amount > 1.0f || Amount < 0.0f) FMath::Clamp(Amount, 0.0f, 1.0f);
+
+	return (15.0f * Amount - 2.0f);
 }

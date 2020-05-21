@@ -11,14 +11,12 @@ void AAnkelbiter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Weakening feedback, color transition
-	// Temporarily fix for the additional material in Ankelbiters. In final game, all enemies will only have one
-	// material. So the function found in "Enemy.cpp" is enough
-	UMaterialInstanceDynamic* TempMaterial = Super::GetMesh()->CreateDynamicMaterialInstance(1);
-	if (TempMaterial /*&& !bIsStunned*/)
-	{
-		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
-	}
+	// OLD FIX FOR WEAKENING VISUAL (turned this into a for-lopp in "Enemy.cpp")
+	//UMaterialInstanceDynamic* TempMaterial = Super::GetMesh()->CreateDynamicMaterialInstance(1);
+	//if (TempMaterial /*&& !bIsStunned*/)
+	//{
+	//	TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
+	//}
 
 	GetCharacterMovement()->bOrientRotationToMovement = (bRotateTowardsPlayer) ? true : false;
 }

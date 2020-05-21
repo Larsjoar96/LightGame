@@ -34,6 +34,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MyVariables | Enums")
 	EEnemyLabel EnemyLabel;
 
+	class UMaterialInstanceDynamic* EnemyMaterial;
+
 	// ArenaDetector is communicating with its ArenaManager regarding OverlapEvents
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* ArenaDetector;
@@ -87,6 +89,7 @@ public:
 	bool bAttacking;
 
 	bool bDead;
+	bool bDissolveEnemy;
 	bool bWithinAttackRange;
 
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
@@ -117,12 +120,20 @@ public:
 	UPROPERTY()
 	float MovementSpeedReduction;//Decides how much speed enemy should lose by being inside flashlight
 
+	// Time passed since dissolving of enemy started.
+	float TimePassed;
+
+	// Amount of seconds before enemy is teleported back to spawn pool. Starting from the time of death
+	float TimerForTpEnemy;
+
 	UPROPERTY()
 	FVector SpawnPoolLocation;//Location of where non-used enemies will be
 
 	// This is a struct!
 	// Timer handle for "teleport back to spawn pool" delay
 	FTimerHandle DeathTimer;
+
+	int32 AmountOfMaterials;
 
 
 protected:
@@ -201,5 +212,9 @@ public:
 
 	UFUNCTION()
 	void DestroyEnemy();
+
+	// 0.0f = no dissolve
+	// 1.0f = fullly dissolved
+	float AmountToDissolve(float Amount);
 
 };
