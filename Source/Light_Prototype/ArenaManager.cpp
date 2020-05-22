@@ -166,6 +166,8 @@ void AArenaManager::DecrementEnemies()
 			bRaisePlatforms = true;
 			bLowerPlatforms = false; // Make it possible to exit encounter area
 			EnterArenaCollider->DestroyComponent();
+
+			PlayerRef->bIsInCombat = false;
 		}
 	}
 
@@ -189,6 +191,8 @@ void AArenaManager::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 		bRaisePlatforms = false;
 		bLowerPlatforms = true;
 		bEncounterStarted = true;
+
+		PlayerRef->bIsInCombat = true;
 	}
 }
 
@@ -199,6 +203,8 @@ void AArenaManager::ResetEncounter()
 	bEncounterStarted = false;
 	bLowerPlatforms = false;
 	bRaisePlatforms = true;
+
+	PlayerRef->bIsInCombat = false;
 
 	for (int32 i{ 0 }; i < AmountOfSpawners; i++)
 	{
