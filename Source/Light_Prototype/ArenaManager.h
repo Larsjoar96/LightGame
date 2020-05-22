@@ -69,11 +69,13 @@ public:
 	// Calculated Z-values for lowering and raising enter/exit platforms
 	float CalculatedEnter, CalculatedExit;
 
-	bool bEncounterComplete;
 	bool bLowerPlatforms;
 	bool bRaisePlatforms;
 	bool bJustReset;
+	UPROPERTY(BlueprintReadOnly)
 	bool bEncounterStarted;
+	UPROPERTY(BlueprintReadOnly)
+	bool bEncounterComplete;
 
 
 protected:

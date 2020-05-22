@@ -140,8 +140,6 @@ void AMyPlayer::BeginPlay()
 	LastCheckpoint = GetActorLocation();
 
 	//Initialize Flashlight collider Transforms
-
-	//Initialize Flashlight collider Transforms
 	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
 	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
 
@@ -423,7 +421,7 @@ void AMyPlayer::LightBehaviour()
 			if (LaserCharger <= 0)
 			{
 				bJustShot = false;
-				FlashLightPivot->SetHiddenInGame(false);
+				//FlashLightPivot->SetHiddenInGame(false);
 				//Set location of Finishing move to hidden
 				LaserPivot->SetRelativeLocation(LaserLocationDefault);
 				//Set location of flashlight hitbox in front of player
@@ -435,7 +433,7 @@ void AMyPlayer::LightBehaviour()
 				FlashLightPivot->SetRelativeLocation(LightLocationDefault - ColliderLocationOffset);
 				FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 			}
-			else
+			/*else
 			{
 				//Flicker flashlight
 				if (FlashLightPivot->bHiddenInGame == true)
@@ -449,6 +447,7 @@ void AMyPlayer::LightBehaviour()
 
 				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 			}
+			*/
 		}
 		else
 		{

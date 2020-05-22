@@ -86,6 +86,8 @@ public:
 	bool bPrioritizeReady;
 	bool bShouldFlicker;
 	bool bJustFlicked;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInCombat;
 	FVector LeftForward;
 	FVector RightForward;
 	FVector DirectionOfTrace;
