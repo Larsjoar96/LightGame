@@ -66,6 +66,19 @@ void ALaserBeamVisual::BeginPlay()
 
 	// Create a dynamic material instance to change opacity and brightness in runtime
 	LaserMaterial = LaserLightVisual->CreateDynamicMaterialInstance(0);
+
+	// Spawn particle system
+	if (NormalLaser && LargeLaser)
+	{
+		if (PlayerRef->CurrentPowerUp == ECurrentPowerUp::ECP_Blue_PowerUp)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LargeLaser, (LaserLightVisual->GetComponentLocation() + LaserLightVisual->GetForwardVector()), GetActorRotation(), true);
+		}
+		else
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), NormalLaser, (LaserLightVisual->GetComponentLocation() + LaserLightVisual->GetForwardVector()), GetActorRotation(), true);
+		}
+	}
 }
 
 // Called every frame
@@ -74,14 +87,14 @@ void ALaserBeamVisual::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TimePassed += DeltaTime;
-	NewLightBrightness = InitialLightBrightness - (TimePassed * 400000.0f);
+	NewLightBrightness = InitialLightBrightness - (TimePassed * 800000.0f);
 
 	// Quickly fade away laser light
 	OverLight->SetIntensity(NewLightBrightness);
 	UnderLight->SetIntensity(NewLightBrightness);
 
 	// Quickly fade away laser material
-	LaserMaterial->SetScalarParameterValue(FName("Brightness"), 50.0f - (TimePassed * 100.0f));
+	LaserMaterial->SetScalarParameterValue(FName("Brightness"), 30.0f - (TimePassed * 60.0f));
 	if (TimePassed >= 0.10f) LaserMaterial->SetScalarParameterValue(FName("Opacity"), 0.1f - (TimePassed / 4.0f));
 
 

@@ -26,6 +26,12 @@ public:
 
 	class AMyPlayer* PlayerRef;
 
+	UPROPERTY(EditAnywhere, Category = "Particles")
+	class UParticleSystem* NormalLaser;
+
+	UPROPERTY(EditAnywhere, Category = "Particles")
+	class UParticleSystem* LargeLaser;
+
 private:
 	class UMaterialInstanceDynamic* LaserMaterial;
 
