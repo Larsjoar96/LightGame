@@ -51,10 +51,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "My Variables")
 	TArray<class AEnemySpawner*> EnemySpawners;
 
+	// Player reference
+	class AMyPlayer* PlayerRef;
+
 	int32 EnemiesLeft;
-
 	int32 AmountOfSpawners;
-
 	float TimePassed;
 
 	// Distance EnterPlatform needs to travel when raising/lowering. Reasonable values range: 2.0 - 6.0
@@ -68,11 +69,14 @@ public:
 	// Calculated Z-values for lowering and raising enter/exit platforms
 	float CalculatedEnter, CalculatedExit;
 
-	bool bEncounterComplete;
 
 	bool bLowerPlatforms;
-
 	bool bRaisePlatforms;
+	bool bJustReset;
+	UPROPERTY(BlueprintReadOnly)
+	bool bEncounterStarted;
+	UPROPERTY(BlueprintReadOnly)
+	bool bEncounterComplete;
 
 
 protected:
@@ -88,6 +92,9 @@ public:
 
 	// Function will be called whenever an enemy ends collision with 'ArenaVolume'
 	void DecrementEnemies();
+
+	// If player dies, encounter should start over when player returns
+	void ResetEncounter();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,

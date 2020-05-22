@@ -5,6 +5,9 @@
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/PointLightComponent.h"
+#include "MyPlayer.h"
 
 // Sets default values
 APickup::APickup()
@@ -33,6 +36,12 @@ APickup::APickup()
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
+	// Color of light will be assign in BP
+	LightSource = CreateDefaultSubobject<UPointLightComponent>(TEXT("LightSource"));
+	LightSource->SetupAttachment(GetRootComponent());
+	LightSource->SetRelativeLocation(FVector(0.0f, 0.0f, -20.0f));
+	LightSource->SetIntensity(1000.0f);
+	LightSource->AttenuationRadius = 230.0f;
 
 	//Set rotation speed of pickup
 	PitchValue = 0.0f;
@@ -46,8 +55,7 @@ void APickup::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Start checking for OverlapBegin events
-	Collider->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnOverlapBegin);
+
 }
 
 // Called every frame
@@ -59,7 +67,7 @@ void APickup::Tick(float DeltaTime)
 	//Got help from this page: https://unrealcpp.com/rotating-actor/
 	FRotator NewRotation = FRotator(PitchValue, YawValue, RollValue);
 	FQuat QuatRotation = FQuat(NewRotation);
-	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+	AddActorWorldRotation(QuatRotation, false, 0, ETeleportType::None);
 
 }
 
@@ -68,5 +76,12 @@ void APickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 {
 	UE_LOG(LogTemp, Warning, TEXT("PARENT: OnOverlapBegin called"))
 
-	// Put particle effects and sound effects here (as it's common amongst all pickups)
+	if (OtherActor->IsA<AMyPlayer>())
+	{
+		if (ParticleOnPickup)
+		{
+			// Spawn particle system if assigned in BP
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticleOnPickup, (GetActorLocation() + FVector(0.0f, 0.0f, 50.0f)), FRotator(0.0f), true);
+		}
+	}
 }

@@ -5,7 +5,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "MyPlayer.generated.h"
+
+
+UENUM(BlueprintType)
+enum class ECurrentPowerUp : uint8
+{
+	ECP_None 		    UMETA(Displayname = "None"),
+	ECP_Red_PowerUp		UMETA(Displayname = "Red_PowerUp"),
+	ECP_Green_PowerUp	UMETA(Displayname = "Green_PowerUp"),
+	ECP_Blue_PowerUp	UMETA(Displayname = "Blue_PowerUp"),
+
+	ECP_Max		        UMETA(Displayname = "DefaultMax")
+};
+
 
 UCLASS()
 class LIGHT_PROTOTYPE_API AMyPlayer : public ACharacter
@@ -27,6 +41,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PowerUp")
+	ECurrentPowerUp CurrentPowerUp;
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector LastCheckpoint;
 
 	// Behind/Left/Right/Mid colliders are used for the behvaiour of Herder enemies
 	UPROPERTY(EditAnywhere, Category = "AI")
@@ -54,7 +73,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float RightDistance;
 
-
 	// Vectors used by Herder AI as destinations for Stage One
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	FVector LeftPointLocation;
@@ -68,18 +86,20 @@ public:
 	bool bPrioritizeReady;
 	bool bShouldFlicker;
 	bool bJustFlicked;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInCombat;
 	FVector LeftForward;
 	FVector RightForward;
 	FVector DirectionOfTrace;
 	FHitResult* HitResult;
 	FCollisionQueryParams* TraceParams;
 
-
+	//Making DeltaTime Global
 	UPROPERTY()
 	float Time;
 
-	UPROPERTY(EditAnywhere, Category = "Collider")
-	class UBoxComponent* FlashLightCollider;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UStaticMeshComponent* FlashLightCollider;
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* FlashLightPivot;
 
@@ -88,14 +108,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collider")
 	class USphereComponent* LaserPivot;
 
-	//UPROPERTY(EditAnywhere, Category = "Mesh")
-		//class USkeletalMeshComponent* PlayerMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Light")
+	class USpotLightComponent* Flashlight;
 
 	FTimerHandle MyTimerHandle;
 
 	// TimerHandle for Herder AI Behaviour
 	FTimerHandle AITimerHandle;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	bool bIsCharging;
@@ -132,10 +151,12 @@ public:
 	float PowerUpLightScale;//How much the "increase light size" pickup should increace it by. 2 = double
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
 	float PowerUpLaserScale;//How much the "increase finishing move size" pickup should increace it by. 2 = double
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Powerups")
+	float YScaler;//Extra scaler for y-direction to make fit for lighting
 
-		//Values for charging up your finishingmove
+	//Values for charging up your finishingmove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
-	float LightReduceScaleMod;//Helps make the flashlight scale down
+	float LightReduceScaleMod;//Helps make the flashlight scale down while charing the laser
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	float LightReturnSpeed;//Affects how fast your light returns if you let go before fully charged
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
@@ -145,13 +166,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserCharge")
 	float ColliderLocationOffset;//When your finishing move is fully charged
 
-		//Values for damage invincibility after taking damage
+	//Values for damage invincibility after taking damage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
 	float TimeRecovering;//How long you have been in "recovery state"
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageFeedback")
 	float TimeToRecover;//How long it will take you to lose invincibility from taking damage
 
-		//Transforms for the light cone
+	//Transforms for the light cone
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
 	FVector LightLocationDefault;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LightTransforms")
@@ -203,6 +224,8 @@ public:
 	void CooledDown();
 	void StopCharging();
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnAtLastCheckpoint();
 
 	// Functions for Left/Right points (connected to Herder AI behaviour)
 	void ReduceDistance();

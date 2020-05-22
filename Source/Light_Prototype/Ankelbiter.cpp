@@ -4,6 +4,7 @@
 #include "Ankelbiter.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 void AAnkelbiter::Tick(float DeltaTime)
@@ -14,8 +15,10 @@ void AAnkelbiter::Tick(float DeltaTime)
 	// Temporarily fix for the additional material in Ankelbiters. In final game, all enemies will only have one
 	// material. So the function found in "Enemy.cpp" is enough
 	UMaterialInstanceDynamic* TempMaterial = Super::GetMesh()->CreateDynamicMaterialInstance(1);
-	if (TempMaterial && !bIsStunned)
+	if (TempMaterial /*&& !bIsStunned*/)
 	{
 		TempMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}
+
+	GetCharacterMovement()->bOrientRotationToMovement = (bRotateTowardsPlayer) ? true : false;
 }

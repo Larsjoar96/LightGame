@@ -44,43 +44,85 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	class UBoxComponent* LaserDetector;
 
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* AttackRange;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class UBoxComponent* StartAttackingRange;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	class USphereComponent* PlayerDetector;
+
 	UPROPERTY()
 	class AMyPlayer* Player;
 
 	UPROPERTY()
 	class ACharacter* CharacterCaster;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
+	class UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> FlashlightWidener;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> FasterReload;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> LazerWidener;
+
+	UPROPERTY(EditAnywhere, Category = "Pickups")
+	TSubclassOf<class APickup> Health;
+
+	UPROPERTY()
 	bool bBeingStunned;//Check if enemy is standing in flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsStunned;//Check if enemy is stunned 
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadOnly)
+	bool bRotateTowardsPlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Anims")
+	bool bAttacking;
+
+	bool bDead;
+	bool bWithinAttackRange;
+
+	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
+	UPROPERTY(EditAnywhere, Category = "MyVariables | PreSpawner")
+	bool bPreSpawnedEnemy;
+
+	// Used for pre spawned enemies. They will only move towards palyer if within range.
+	bool bWithinRangeOfPlayer;
+
+	UPROPERTY()
 	float TimeStunned;//How long the enemy should be stunned in seconds
 
-	UPROPERTY(EditAnywhere)//How long it takes to stun enemy in seconds
+	UPROPERTY()//How long it takes to stun enemy in seconds
 	float TimeUntilStunned;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float TimeInFlashlight;//How long the enemy has been isnide flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	float HerderTopSpeed;// Herder max walk speed
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	float AnkelbiterTopSpeed;// Ankelbiter max walk speed
 
-	UPROPERTY(EditAnywhere)
-	float MoveAttackCollider;
+	UPROPERTY()
+	float MoveAttackRange;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float MovementSpeedReduction;//Decides how much speed enemy should lose by being inside flashlight
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FVector SpawnPoolLocation;//Location of where non-used enemies will be
 
-
+	// This is a struct!
+	// Timer handle for "teleport back to spawn pool" delay
+	FTimerHandle DeathTimer;
 
 
 protected:
@@ -93,6 +135,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Teleport enemy to spawn poll when dead
+	void TpEnemyToPool();
 
 	UFUNCTION()
 	void ArenaBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -115,16 +160,20 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void LaserEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
-	void AttackRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void StartAttackingRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void PlayerDetectorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void PlayerDetectorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
 	void Stunning();
@@ -135,7 +184,22 @@ public:
 	UFUNCTION()
 	void Die();
 
+	UFUNCTION(BlueprintCallable)
+	void Attack();
 
+	UFUNCTION(BlueprintCallable)
+	void EndAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void DamagePlayer();
+
+	UFUNCTION()
+	void SpawnPowerUp(int32 PowerUpIndex);
+
+	UFUNCTION()
+	void SpawnHealth();
+
+	UFUNCTION()
+	void DestroyEnemy();
 
 };

@@ -3,15 +3,26 @@
 
 #include "Enemy.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "MyPlayer.h"
-#include "ArenaManager.h"
-#include "Herder.h"
-#include "Ankelbiter.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "Components/BoxComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "Pickup_LaserWidener.h"
+#include "Pickup_FasterReload.h"
+#include "FlashlightWidener.h"
+#include "Pickup_Health.h"
+#include "Engine/World.h"
+#include "ArenaManager.h"
+#include "TimerManager.h"
+#include "Ankelbiter.h"
+#include "MyPlayer.h"
+#include "Herder.h"
+#include "Pickup.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -31,6 +42,27 @@ AEnemy::AEnemy()
 	LaserDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserDetector"));
 	LaserDetector->SetupAttachment(GetRootComponent());
 
+	// Create component for Attack Range Collider
+	// Attributes will be different for each enemy, so box extent etc. will be modified in BP
+	AttackRange = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackRange"));
+	AttackRange->SetupAttachment(GetRootComponent());
+	AttackRange->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	AttackRange->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	// Create component for Start Attacking Range Collider
+	// Attributes will be different for each enemy, so box extent etc. will be modified in BP
+	StartAttackingRange = CreateDefaultSubobject<UBoxComponent>(TEXT("StartAttackingRange"));
+	StartAttackingRange->SetupAttachment(GetRootComponent());
+	StartAttackingRange->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	StartAttackingRange->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	// Collider only used by pre spawned enemies
+	PlayerDetector = CreateDefaultSubobject<USphereComponent>(TEXT("PlayerDetector"));
+	PlayerDetector->SetupAttachment(GetRootComponent());
+	PlayerDetector->SetSphereRadius(1150.0f);
+	PlayerDetector->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	PlayerDetector->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
 	// Default 'none' value, as a safety if you forgot to assign it in the editor
 	EnemyLabel = EEnemyLabel::ESL_None;
 
@@ -40,6 +72,12 @@ AEnemy::AEnemy()
 	HerderTopSpeed = 350.0f;
 	AnkelbiterTopSpeed = 250.0f;
 	MovementSpeedReduction = 60;
+	bWithinRangeOfPlayer = true;
+	bRotateTowardsPlayer = true;
+	bWithinAttackRange = false;
+	bPreSpawnedEnemy = false;
+	bAttacking = false;
+	bDead = true;
 
 }
 
@@ -56,9 +94,22 @@ void AEnemy::BeginPlay()
 	FlashlightDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::FlashLightEndOverlap);
 
 	LaserDetector->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::LaserBeginOverlap);
-	LaserDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::LaserEndOverlap);
+	
+	AttackRange->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AttackRangeEndOverlap);
 
-	SpawnPoolLocation = GetActorLocation();
+	StartAttackingRange->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::StartAttackingRangeBeginOverlap);
+
+	if (bPreSpawnedEnemy == false)
+	{
+		SpawnPoolLocation = GetActorLocation();
+	}
+	else
+	{
+		PlayerDetector->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::PlayerDetectorBeginOverlap);
+		PlayerDetector->OnComponentEndOverlap.AddDynamic(this, &AEnemy::PlayerDetectorEndOverlap);
+		bWithinRangeOfPlayer = false;
+		bDead = false;
+	}
 }
 
 // Called every frame
@@ -93,11 +144,14 @@ void AEnemy::Tick(float DeltaTime)
 	// VERY IMPORTANT: when the real materials are imported and used, change the material from inside the node in 'MEnemyDefault'. 
 	// Don't swap the whole material class itself. This is to still keep the blueprint functionalities within the material.
 	UMaterialInstanceDynamic* EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(0);
-	if (EnemyMaterial && !bIsStunned)
+	if (EnemyMaterial /*&& !bIsStunned*/)
 	{
 		EnemyMaterial->SetScalarParameterValue(FName("WeakenedAmount"), (TimeInFlashlight / TimeUntilStunned));
 	}	
 
+	// If enemy is attacking, the enemy should not be able to move
+	// Or if a pre spawned enemy is not within range of player
+	if (bAttacking || !bWithinRangeOfPlayer) GetCharacterMovement()->MaxWalkSpeed = 0;
 }
 
 // Called to bind functionality to input
@@ -132,7 +186,7 @@ void AEnemy::ArenaEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->IsA<UBoxComponent>())
+	if (OtherComp->IsA<UStaticMeshComponent>())
 	{
 		if (OtherComp->ComponentHasTag("Flashlight"))//Is it overlapping with flashlight?
 		{
@@ -141,7 +195,6 @@ void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 			if (Player->bJustShot == false)//Check if player just fired a shot
 			{
 				bBeingStunned = true;
-
 			}
 
 		}
@@ -151,7 +204,7 @@ void AEnemy::FlashLightBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 void AEnemy::FlashLightEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherComp->IsA<UBoxComponent>())
+	if (OtherComp->IsA<UStaticMeshComponent>())
 	{
 		if (OtherComp->ComponentHasTag("Flashlight"))//Was it the flashlight that stopped overlapping ?
 		{
@@ -173,23 +226,55 @@ void AEnemy::LaserBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	}
 }
 
-void AEnemy::LaserEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
 
-}
-
-void AEnemy::AttackRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-}
 void AEnemy::AttackRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinAttackRange = false;
+	}
 }
 
+void AEnemy::StartAttackingRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinAttackRange = true;
+		if (!bIsStunned)
+		{
+			Attack();
+		}
+	}
+}
+
+void AEnemy::PlayerDetectorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinRangeOfPlayer = true;
+
+		if (Cast<AHerder>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+		}
+		else if (Cast<AAnkelbiter>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
+		}
+	}
+}
+
+void AEnemy::PlayerDetectorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (Cast<AMyPlayer>(OtherActor))
+	{
+		bWithinRangeOfPlayer = false;
+	}
+}
 
 void AEnemy::Stunning()
 {
@@ -197,7 +282,6 @@ void AEnemy::Stunning()
 	{
 		bIsStunned = true;
 		GetCharacterMovement()->MaxWalkSpeed = 0;
-		//Function for material change needed
 	}
 	else if (!bIsStunned)
 	{
@@ -209,30 +293,168 @@ void AEnemy::Stunning()
 		{
 			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed - (TimeInFlashlight * MovementSpeedReduction);
 		}
-		//Function for material change needed
 	}
 }
 
 void AEnemy::Rally()
 {
 	bIsStunned = false;
-
-	if (Cast<AHerder>(this))
+	if (!bDead)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+		if (Cast<AHerder>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = HerderTopSpeed;
+		}
+		else if (Cast<AAnkelbiter>(this))
+		{
+			GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
+		}
 	}
-	else if (Cast<AAnkelbiter>(this))
-	{
-		GetCharacterMovement()->MaxWalkSpeed = AnkelbiterTopSpeed;
-	}
-	//Function for material change needed
 }
 
 void AEnemy::Die()
 {
 	if (bIsStunned)
 	{
-		SetActorLocation(SpawnPoolLocation);
+		int32 PowerUpIndex{};
+
+		// Make enemy drop PowerUp number 'PowerUpIndex'
+		PowerUpIndex = UKismetMathLibrary::RandomIntegerInRange(1, 3);
+		SpawnPowerUp(PowerUpIndex);
+
+		bDead = true;
+		bRotateTowardsPlayer = false;
+		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+
+		// If enemy is pre spawned, then destroy it. Else, teleport it back to spawn pool
+		if (bPreSpawnedEnemy)
+		{
+			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::DestroyEnemy, 0.930f);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &AEnemy::TpEnemyToPool, 0.930f);
+		}
 	}
 }
 
+void AEnemy::TpEnemyToPool()
+{
+	SetActorLocation(SpawnPoolLocation);
+	TimeInFlashlight = 0;
+	bRotateTowardsPlayer = true;
+}
+
+void AEnemy::Attack()
+{
+	bAttacking = true;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(FName("Attack_1"), AttackMontage);
+	}
+}
+
+void AEnemy::EndAttack()
+{
+	bAttacking = false;
+
+	// If still within attack range when attack ends, continue attacking
+	if (bWithinAttackRange)
+	{
+		Attack();
+	}
+}
+
+void AEnemy::DamagePlayer()
+{
+	if (bWithinAttackRange)
+	{
+		AMyPlayer* PlayerRef = Cast<AMyPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		PlayerRef->PlayerHealth -= 1;
+	}
+}
+
+void AEnemy::SpawnPowerUp(int32 PowerUpIndex)
+{
+	TSubclassOf<APickup> PowerUpToSpawn;
+	float Random{};
+
+	if (FasterReload && FlashlightWidener && LazerWidener)
+	{
+		// This switch will choose a powerup to spawn
+		switch (PowerUpIndex)
+		{
+		case 1:
+			PowerUpToSpawn = FasterReload;
+			UE_LOG(LogTemp, Warning, TEXT("FasterReload selected"))
+			break;
+		case 2:
+			PowerUpToSpawn = FlashlightWidener;
+			UE_LOG(LogTemp, Warning, TEXT("FlashlightWidener selected"))
+			break;
+		case 3:
+			PowerUpToSpawn = LazerWidener;
+			UE_LOG(LogTemp, Warning, TEXT("LazerWidener selected"))
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("PowerUpIndex's range exceeds the amount of existing PowerUps"))
+			// Quit game function
+			break;
+		}
+
+		Random = UKismetMathLibrary::RandomFloat();
+
+		// 10% chance of dropping powerup
+		if (Random <= 0.10f)
+		{
+			FActorSpawnParameters SpawnParams;
+			FVector Location = GetActorLocation() + FVector(0.0f, 0.0f, 20.0f);
+			FRotator Rotation(0.0f);
+
+			// Spawn the 'PowerUpToSpawn' when enemy dies
+			APickup* PowerUpRef = GetWorld()->SpawnActor<APickup>(PowerUpToSpawn, Location, Rotation, SpawnParams);
+		}
+		else
+		{
+			// No powerup was dropped, so check if health pickup should be spawned
+			SpawnHealth();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Enemies are missing PowerUp! Assign the corresponding PowerUp in Herder/Ankelbiter BP ..."))
+	}
+
+
+}
+
+void AEnemy::SpawnHealth()
+{
+	if (Health)
+	{
+		float Random{};
+		FActorSpawnParameters SpawnParams;
+		FVector Location = GetActorLocation() + FVector(0.0f, 0.0f, -5.0f);
+		FRotator Rotation(0.0f);
+
+		Random = UKismetMathLibrary::RandomFloat();
+
+		// 4% chance of dropping health pickup
+		if (Random <= 0.04f)
+		{
+			APickup* HealthRef = GetWorld()->SpawnActor<APickup>(Health, Location, Rotation, SpawnParams);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Health pickup missing in enemy's BP!!"))
+	}
+}
+
+void AEnemy::DestroyEnemy()
+{
+	this->Destroy();
+}

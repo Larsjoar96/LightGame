@@ -18,10 +18,9 @@ public:
 	APickup_LaserWidener();
 
 	UPROPERTY()
-		class AMyPlayer* Player;//Player reference
+	class AMyPlayer* Player;//Player reference
 
-
-		// DON'T USE UFUNCTION() FOR OVERRIDES 
+	// DON'T USE UFUNCTION() FOR OVERRIDES 
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 

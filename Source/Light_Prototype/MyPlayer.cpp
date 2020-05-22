@@ -27,7 +27,7 @@ AMyPlayer::AMyPlayer()
 	ParentOfPoints = CreateDefaultSubobject<USceneComponent>(TEXT("ParentOfPoints"));
 	ParentOfPoints->SetupAttachment(HerderAI);
 
-	FlashLightCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("FlashLightCollider"));
+	FlashLightCollider = CreateDefaultSubobject <UStaticMeshComponent> (TEXT("FlashLightCollider"));
 	FlashLightPivot = CreateDefaultSubobject<USphereComponent>(TEXT("FlashLightColliderPivot"));
 
 	LaserCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("LaserCollider"));
@@ -38,6 +38,11 @@ AMyPlayer::AMyPlayer()
 	LaserPivot->SetRelativeScale3D(FVector(.25f, .25f, .25f));
 	LaserPivot->SetRelativeLocation(FVector(40, 0.f, 0.f));
 
+	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Light"));
+	Flashlight->SetupAttachment(GetRootComponent());
+	Flashlight->SetIntensity(500000.0f);
+	Flashlight->SetAttenuationRadius(600.0f);
+	Flashlight->SetOuterConeAngle(40.0f);
 
 	// Colliders for Herder AI Behvaiour
 	BehindCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BehindCollider"));
@@ -87,19 +92,12 @@ AMyPlayer::AMyPlayer()
 	bShouldFlicker = false;
 	bJustFlicked = false;
 
-	//PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
-
 	FlashLightCollider->SetupAttachment(FlashLightPivot);
 	LaserCollider->SetupAttachment(LaserPivot);
 	LaserPivot->SetupAttachment(GetRootComponent());
 	FlashLightPivot->SetupAttachment(GetRootComponent());
 
 	ColliderLocationOffset = 9000.0f;//Used for hiding flashlight cone and laser
-
-	//Initialize Flashlight collider Transforms
-	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
-	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
-	LightRotationDefault = this->GetActorRotation();
 
 	FlashLightScaleModifier = 1.1f;
 	LightReduceScaleMod = 1.01f;//Used to make the scale of the flashlight go down when you charge up laser
@@ -112,19 +110,22 @@ AMyPlayer::AMyPlayer()
 	LaserRotationDefault = this->GetActorRotation();
 
 	//Initialize PowerUp Variables
-	PowerUpTime = 45.0f;
+	PowerUpTime = 20.0f;
 	PowerUpTimeLeft = 0;
 	ReloadSpeedDefault = 2.0f;
 	ReloadSpeedCurrent = 2.0f;
 	ReloadSpeedUpgraded = 4.0f;
 	PowerUpLightScale = 2.0f;
-	PowerUpLaserScale = 2.0f;
+	PowerUpLaserScale = 4.0f;
+	YScaler = 4.2f;
+
+	LightRotationDefault = this->GetActorRotation();
 
 	//Combat values
 	PlayerHealth = 5;
 	DamageTaken = 1;
 	ShootingTime = 0.03f;
-
+	CurrentPowerUp = ECurrentPowerUp::ECP_None;
 
 }
 
@@ -133,13 +134,22 @@ void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Set first checkpoint as the location at the start of the game
+	LastCheckpoint = GetActorLocation();
+
 	//Initialize Flashlight collider Transforms
+
+	//Initialize Flashlight collider Transforms
+	LightLocationDefault = FlashLightPivot->GetRelativeLocation();
+	LightScaleDefault = FlashLightPivot->GetRelativeScale3D();
+;
+
 	LightLocationCurrent = LightLocationDefault;
 	LightScaleCurrent = LightScaleDefault;
 	LightRotationCurrent = LightRotationDefault;
 
 	LightLocationPoweredUp = LightLocationDefault;
-	LightScalePoweredUp = FVector(LightScaleDefault.X, LightScaleDefault.Y * PowerUpLightScale, LightScaleDefault.Z * PowerUpLightScale);
+	LightScalePoweredUp = FVector(LightScaleDefault.X * PowerUpLightScale, LightScaleDefault.Y * PowerUpLightScale * YScaler, LightScaleDefault.Z * PowerUpLightScale);
 	LightRotationPoweredUp = LightRotationDefault;
 
 
@@ -149,7 +159,7 @@ void AMyPlayer::BeginPlay()
 	LaserRotationCurrent = LaserRotationDefault;
 
 	LaserLocationPoweredUp = LaserLocationDefault;
-	LaserScalePoweredUp = FVector(LaserScaleDefault.X, LaserScaleDefault.Y * PowerUpLaserScale, LaserScaleDefault.Z * PowerUpLaserScale);
+	LaserScalePoweredUp = FVector(LaserScaleDefault.X , LaserScaleDefault.Y * PowerUpLaserScale, LaserScaleDefault.Z * PowerUpLaserScale);
 	LaserRotationPoweredUp = LaserRotationDefault;
 
 	LaserPivot->SetRelativeLocation(LaserLocationDefault);
@@ -161,7 +171,7 @@ void AMyPlayer::BeginPlay()
 	// Because I set their location further down as 'SetRelativeLocation', they spawned at twice the
 	// rotation of GetActorRotation(). To fix this, I made the parent of these points half the rotation
 	// of GetActorRotation(). This will spawn them at the intended location.
-	float Yaw{ GetActorRotation().Yaw / 2};
+	float Yaw{GetActorRotation().Yaw / 2};
 	ParentOfPoints->SetWorldRotation(FRotator(0.0f, Yaw, 0.0f));
 
 	// Forward vectors of left/right point
@@ -188,7 +198,10 @@ void AMyPlayer::Tick(float DeltaTime)
 
 	Time = DeltaTime;
 
+	if (PlayerHealth <= 0) SpawnAtLastCheckpoint();
+
 	FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
+
 
 	LightBehaviour();
 	if (bHasPowerUp == true)
@@ -267,12 +280,9 @@ void AMyPlayer::ChargeUp()//Hold button to charge
 void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 {
 	if (bJustShot == false)
-		UE_LOG(LogTemp, Warning, TEXT("Shoot!"));
 	{
 		if (LaserCharger >= LaserFullyCharged)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PEW!"));
-
 			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
 
 			GetWorld()->GetTimerManager().SetTimer(MyTimerHandle, this, &AMyPlayer::CooledDown, (ShootingTime));
@@ -295,6 +305,7 @@ void AMyPlayer::PickupEventBiggerFlashlight()//Increase size of flashlight
 	FlashLightPivot->SetRelativeScale3D(LightScaleCurrent);
 
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Green_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 
 }
@@ -304,6 +315,7 @@ void AMyPlayer::PickupEventFasterReload()//Increase fire rate of your finishing 
 	LosePowerup();
 	ReloadSpeedCurrent = ReloadSpeedUpgraded;
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Red_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 }
 
@@ -316,6 +328,7 @@ void AMyPlayer::PickupEventBiggerLaser()//Increase the size of the finishing mov
 	LaserPivot->SetRelativeScale3D(LaserScaleCurrent);
 
 	bHasPowerUp = true;
+	CurrentPowerUp = ECurrentPowerUp::ECP_Blue_PowerUp;
 	PowerUpTimeLeft = PowerUpTime;
 }
 
@@ -339,6 +352,7 @@ void AMyPlayer::LosePowerup()//Remove the power you have and reset the timer(Not
 	ReloadSpeedCurrent = ReloadSpeedDefault;
 
 	bHasPowerUp = false;
+	CurrentPowerUp = ECurrentPowerUp::ECP_None;
 
 }
 
@@ -393,7 +407,7 @@ void AMyPlayer::LightBehaviour()
 			if (LaserCharger <= 0)
 			{
 				bJustShot = false;
-				FlashLightPivot->SetHiddenInGame(false);
+				//FlashLightPivot->SetHiddenInGame(false);
 				//Set location of Finishing move to hidden
 				LaserPivot->SetRelativeLocation(LaserLocationDefault);
 				//Set location of flashlight hitbox in front of player
@@ -405,7 +419,7 @@ void AMyPlayer::LightBehaviour()
 				FlashLightPivot->SetRelativeLocation(LightLocationDefault - ColliderLocationOffset);
 				FlashLightPivot->SetRelativeLocation(LightLocationDefault);
 			}
-			else
+			/*else
 			{
 				//Flicker flashlight
 				if (FlashLightPivot->bHiddenInGame == true)
@@ -419,6 +433,7 @@ void AMyPlayer::LightBehaviour()
 
 				FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
 			}
+			*/
 		}
 		else
 		{
@@ -595,13 +610,20 @@ void AMyPlayer::CheckRightValid()
 }
 
 
-// Function is called by 'AITimerHandle' to turn 'bPrioritizeReady' back to true
+// Function is called by 'AITimerHandle' to turn 'bPrioritizeReady' and 'bShouldFlicker' back to true.
+// Left and Right box colliders should flicker (teleport far away and back to its position in the span of 2 frames)
+// This is to be able to generate an OverlapEvent whenever AI is already inside one of the box colliders
+// when 'bPrioritizeReady' turns back to true. Just a solution to how Unreal detect OverlapEvents.
 void AMyPlayer::PrioritizationTrue()
 {
 	bPrioritizeReady = true;
-
-	// Left and Right box colliders should flicker (teleport far away and back to its position in the span of 2 frames)
-	// This is to be able to generate an OverlapEvent whenever AI is already inside one of the box colliders
-	// when 'bPrioritizeReady' turns back to true. Just a solution to how Unreal detect OverlapEvents.
 	bShouldFlicker = true;
+}
+
+void AMyPlayer::SpawnAtLastCheckpoint()
+{
+	UE_LOG(LogTemp, Warning, (TEXT("Respawning...")))
+	LosePowerup();
+	SetActorLocation(LastCheckpoint);
+	PlayerHealth = 5;
 }
