@@ -198,6 +198,8 @@ void AMyPlayer::Tick(float DeltaTime)
 
 	Time = DeltaTime;
 
+	UE_LOG(LogTemp, Warning, TEXT("Forward shit: (%f, %f, %f)"), GetActorForwardVector().X, GetActorForwardVector().Y, GetActorForwardVector().Z)
+
 	if (PlayerHealth <= 0) SpawnAtLastCheckpoint();
 
 	FlashLightPivot->SetRelativeScale3D(FVector(LightScaleCurrent.X, (LightScaleCurrent.Y * (LightReduceScaleMod - LaserCharger)), LightScaleCurrent.Z));
@@ -283,16 +285,16 @@ void AMyPlayer::Shoot()//Shoot if your laser is fully charged
 	{
 		if (LaserCharger >= LaserFullyCharged)
 		{
-			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player
+			LaserPivot->SetRelativeLocation(FVector(LaserLocationDefault.X, LaserLocationDefault.Y, LaserLocationDefault.Z + ColliderLocationOffset));	//Set location of Laser hitbox ahead of the player 
 
 			if (LaserVisual)
 			{
 				FActorSpawnParameters SpawnParams;
-				FVector Location = GetActorLocation();
+				FVector Location = GetMesh()->GetSocketLocation(FName("joint39")) + FVector(0.0f, 0.0f, 30.0f);
 				FRotator Rotation = GetActorRotation();
 
 				// Spawn laser mesh for feedback to player
-				ALaserBeamVisual* VisualRef = GetWorld()->SpawnActor<ALaserBeamVisual>(LaserVisual, Location, Rotation, SpawnParams);
+				ALaserBeamVisual* VisualRef = GetWorld()->SpawnActor<ALaserBeamVisual>(LaserVisual, Location + (GetActorForwardVector() * 45.0f), Rotation, SpawnParams);
 			}
 			else
 			{
