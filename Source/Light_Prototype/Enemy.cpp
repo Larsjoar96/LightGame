@@ -145,14 +145,12 @@ void AEnemy::Tick(float DeltaTime)
 		}
 	}
 
-	// FOR DISSOLVE DEBUGGING
-	//UE_LOG(LogTemp, Warning, TEXT("Dissolve = %d"), bDissolveEnemy)
-
 	// Adding gradient effect to material for feedback to player, regarding weakening progression. Also for the dissolve effect.
 	// VERY IMPORTANT: when the real materials are imported and used, change the material from inside the node in 'MEnemyDefault'. 
 	// Don't swap the whole material class itself. This is to still keep the blueprint functionalities within the material.
 	for (int32 i{ 0 }; i < AmountOfMaterials; i++) 
 	{
+		// If there are materials to dissolve/weaken
 		if ((GetMesh()->GetNumMaterials() - 1) >= i)
 		{
 			EnemyMaterial = GetMesh()->CreateDynamicMaterialInstance(i);
