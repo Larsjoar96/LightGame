@@ -88,8 +88,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Anims")
 	bool bAttacking;
 
+	UPROPERTY(BlueprintReadOnly)
 	bool bDead;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bDissolveEnemy;
+
 	bool bWithinAttackRange;
 
 	// If enemy is NOT initialized in spawn pool. If this enemy is placed in the game world by a level designer.
