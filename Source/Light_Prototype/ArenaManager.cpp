@@ -113,8 +113,8 @@ void AArenaManager::Tick(float DeltaTime)
 		TimePassed += DeltaTime;
 		CalculatedEnter = (-EnterAltitude) * UKismetMathLibrary::Cos(TimePassed - (UKismetMathLibrary::GetPI() / 2));
 		CalculatedExit = (-ExitAltitude) * UKismetMathLibrary::Cos(TimePassed - (UKismetMathLibrary::GetPI() / 2));
-		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter));
-		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit));
+		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter*DeltaTime*60.0f));
+		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit*DeltaTime * 60.0f));
 		if (TimePassed >= (UKismetMathLibrary::GetPI() / 2)) bLowerPlatforms = false;
 	}
 
@@ -125,8 +125,8 @@ void AArenaManager::Tick(float DeltaTime)
 		TimePassed += DeltaTime;
 		CalculatedEnter = (-EnterAltitude) * UKismetMathLibrary::Cos(TimePassed + (UKismetMathLibrary::GetPI()));
 		CalculatedExit = (-ExitAltitude) * UKismetMathLibrary::Cos(TimePassed + (UKismetMathLibrary::GetPI()));
-		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter));
-		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit));
+		EnterPlatform->SetWorldLocation(EnterPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedEnter*DeltaTime * 60.0f));
+		ExitPlatform->SetWorldLocation(ExitPlatform->GetComponentLocation() + FVector(0.0f, 0.0f, CalculatedExit*DeltaTime * 60.0f));
 		if (TimePassed >= (UKismetMathLibrary::GetPI() / 2)) bRaisePlatforms = false;
 	}
 }
