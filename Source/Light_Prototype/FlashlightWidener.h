@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Written by Lars Joar Bjørkeland and Eivind Hobrad Naasen
 
 #pragma once
 
@@ -15,8 +15,6 @@ class LIGHT_PROTOTYPE_API AFlashlightWidener : public APickup
 	GENERATED_BODY()
 
 public:
-	AFlashlightWidener();
-
 	UPROPERTY()
 	class AMyPlayer* Player;//Player reference
 

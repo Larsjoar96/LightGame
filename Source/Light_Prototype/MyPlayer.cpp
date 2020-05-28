@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Written by Lars Joar Bjørkeland and Eivind Hobrad Naasen
 
 #define COLLISION_AIAREA ECC_GameTraceChannel3
 
@@ -197,8 +197,6 @@ void AMyPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Time = DeltaTime;
-
-	UE_LOG(LogTemp, Warning, TEXT("Forward shit: (%f, %f, %f)"), GetActorForwardVector().X, GetActorForwardVector().Y, GetActorForwardVector().Z)
 
 	if (PlayerHealth <= 0) SpawnAtLastCheckpoint();
 

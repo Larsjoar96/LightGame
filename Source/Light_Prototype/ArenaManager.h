@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Written by Eivind Hobrad Naasen 
 
 #pragma once
 

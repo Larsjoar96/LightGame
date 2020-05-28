@@ -1,13 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Written by Lars Joar Bjørkeland and Eivind Hobrad Naasen
 
 
 #include "FlashlightWidener.h"
 #include "MyPlayer.h"
 
-AFlashlightWidener::AFlashlightWidener()
-{
-
-}
 
 void AFlashlightWidener::BeginPlay()
 {

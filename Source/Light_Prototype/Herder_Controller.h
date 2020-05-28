@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Written by Eivind Hobrad Naasen
 
 #pragma once
 
@@ -7,8 +7,6 @@
 #include "Herder_Controller.generated.h"
 
 /**
- * Might convert Herder_Controller_BP into C++ later
- * Might convert Herder_Controller_BP into C++ later
  * Might convert Herder_Controller_BP into C++ later
  */
 UCLASS()
